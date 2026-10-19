@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#061447" />
+    <meta name="description" content="Một món quà 20/10 có hoa tulip, lá thư và album ảnh kỷ niệm." />
+    <meta property="og:title" content="Một món quà dành cho em" />
+    <meta property="og:description" content="Thiệp 20/10 tương tác với hoa tulip và album ảnh kỷ niệm." />
+    <title>20/10 — Một món quà dành cho em</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Fraunces:opsz,wght@9..144,500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main id="app" class="app-shell" data-screen="cover" aria-live="polite">
+      <div class="sky" aria-hidden="true">
+        <div id="stars" class="stars"></div>
+        <div class="moon"></div>
+        <div class="shooting-star shooting-star--one"></div>
+        <div class="shooting-star shooting-star--two"></div>
+        <div class="mountains"></div>
+        <div class="meadow"><span></span><span></span><span></span><span></span><span></span></div>
+        <div id="petals" class="petals"></div>
+      </div>
+      <div id="customBackground" class="custom-background" aria-hidden="true"></div>
+      <audio id="bgMusic" loop preload="metadata"></audio>
+
+      <header class="topbar">
+        <div class="brand-mark" aria-label="Thiệp 20/10">20<span>/</span>10</div>
+        <div class="topbar-actions">
+          <button id="musicToggle" class="icon-button" type="button" aria-label="Bật nhạc" title="Bật/tắt nhạc">♫</button>
+          <button id="settingsToggle" class="icon-button" type="button" aria-label="Mở phần cá nhân hóa" title="Cá nhân hóa">✦</button>
+        </div>
+      </header>
+
+      <section id="scene-cover" class="scene scene--cover is-active" data-scene="cover">
+        <div class="cover-content">
+          <p class="eyebrow">MỘT ĐIỀU NHỎ ANH MUỐN TẶNG EM</p>
+          <h1 id="coverTitle">Happy Vietnamese<br /><em>Women’s Day</em> <strong>20/10</strong></h1>
+          <button id="openGift" class="orb-button" type="button" aria-label="Chạm để mở quà">
+            <span class="orb-button__halo"></span>
+            <span class="orb-button__core">♡</span>
+          </button>
+          <p class="tap-hint">Chạm vào ánh sáng<br /><span>để mở món quà này</span></p>
+        </div>
+      </section>
+
+      <section id="scene-bloom" class="scene scene--bloom" data-scene="bloom" hidden>
+        <div class="bloom-copy">
+          <p class="eyebrow">GỬI NGƯỜI ANH THƯƠNG</p>
+          <h2 id="bloomTitle">Happy Vietnamese<br /><em>Women’s Day 20/10</em></h2>
+          <p id="bloomGreeting" class="bloom-greeting"></p>
+        </div>
+        <div class="single-flower-wrap" aria-label="Một bông tulip đang nở">
+          <div class="stem stem--single"></div>
+          <div class="leaf leaf--single-left"></div>
+          <div class="leaf leaf--single-right"></div>
+          <div class="tulip tulip--single"><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="flower-glow"></div>
+        </div>
+        <div id="bouquetFlowers" class="bouquet-flowers" aria-label="Bó hoa tulip"></div>
+        <div id="bloomActions" class="bloom-actions" hidden>
+          <button id="readLetter" class="primary-button" type="button">Mở lá thư của anh <span>→</span></button>
+        </div>
+      </section>
+
+      <section id="scene-letter" class="scene scene--letter" data-scene="letter" hidden>
+        <div class="letter-backdrop"></div>
+        <article class="letter-card" role="dialog" aria-modal="true" aria-labelledby="letterHeading">
+          <button id="closeLetter" class="close-button" type="button" aria-label="Đóng lá thư">×</button>
+          <div class="letter-seal">♡</div>
+          <p class="eyebrow">MỘT LÁ THƯ NHỎ</p>
+          <h2 id="letterHeading">Gửi em, người anh yêu</h2>
+          <div id="letterBody" class="letter-body"></div>
+          <p id="letterSignature" class="letter-signature">Thương em thật nhiều,<br /><strong>Anh</strong></p>
+          <button id="continueToAlbum" class="primary-button" type="button">Đi tiếp cùng anh <span>→</span></button>
+        </article>
+      </section>
+
+      <section id="scene-fade" class="scene scene--fade" data-scene="fade" hidden>
+        <div class="fade-copy"><p>Những kỷ niệm của chúng mình<br /><em>vẫn còn ở phía trước...</em></p></div>
+        <div class="fade-bouquet" aria-hidden="true">
+          <div class="bouquet-paper"></div>
+          <div class="fade-bouquet-flowers" id="fadeBouquetFlowers"></div>
+        </div>
+        <div class="sparkle-burst" id="sparkleBurst"></div>
+      </section>
+
+      <section id="scene-gallery" class="scene scene--gallery" data-scene="gallery" hidden>
+        <div class="gallery-intro">
+          <p class="eyebrow">MỘT ĐOẠN ĐƯỜNG CÓ EM</p>
+          <h2 id="galleryHeading">Vẫn gần em,<br /><em>dù xa cách</em></h2>
+          <p class="gallery-hint">Chạm vào ✦ để chỉnh ảnh, nhạc và lời chúc</p>
+        </div>
+        <div id="galleryTrack" class="gallery-track" aria-label="Album ảnh kỷ niệm"></div>
+        <div class="gallery-bottom-actions">
+          <button id="restartButton" class="ghost-button" type="button">↺ Xem lại từ đầu</button>
+          <button id="shareButton" class="ghost-button" type="button">⌁ Chia sẻ thiệp</button>
+        </div>
+      </section>
+
+      <aside id="settingsPanel" class="settings-panel" aria-labelledby="settingsHeading" aria-hidden="true">
+        <div class="settings-panel__header">
+          <div><p class="eyebrow">CÁ NHÂN HÓA MÓN QUÀ</p><h2 id="settingsHeading">Chỉnh thiệp của hai mình</h2></div>
+          <button id="closeSettings" class="close-button" type="button" aria-label="Đóng phần cá nhân hóa">×</button>
+        </div>
+        <p class="settings-note">Nền đêm xanh trong ảnh mẫu được giữ nguyên. Các thay đổi tạm thời được lưu trên trình duyệt này. Muốn người yêu thấy ảnh/nhạc khi mở link GitHub Pages, hãy đặt file vào <code>assets/</code> và cập nhật <code>config.js</code>.</p>
+        <form id="settingsForm" class="settings-form">
+          <label>Người nhận<input id="recipientInput" name="recipient" type="text" placeholder="Ví dụ: Em yêu" /></label>
+          <label>Tên người gửi<input id="senderInput" name="sender" type="text" placeholder="Ví dụ: Anh" /></label>
+          <label>Tiêu đề chính<textarea id="titleInput" name="title" rows="2"></textarea></label>
+          <label>Lời chúc ngắn<textarea id="greetingInput" name="greeting" rows="3"></textarea></label>
+          <label>Nội dung lá thư<textarea id="letterInput" name="letter" rows="7"></textarea></label>
+          <label>Ảnh nền tùy chọn<input id="backgroundInput" type="file" accept="image/*" /></label>
+          <label>Nhạc nền tùy chọn<input id="musicInput" type="file" accept="audio/*" /></label>
+          <label>Thêm ảnh kỷ niệm <span class="label-help">có thể chọn hơn 10 ảnh</span><input id="photosInput" type="file" accept="image/*" multiple /></label>
+          <div id="photoList" class="photo-list"></div>
+          <div class="settings-actions">
+            <button class="primary-button" type="submit">Lưu thay đổi</button>
+            <button id="exportButton" class="secondary-button" type="button">Xuất cấu hình</button>
+            <button id="resetButton" class="text-button" type="button">Khôi phục mặc định</button>
+          </div>
+        </form>
+      </aside>
+      <div id="settingsScrim" class="settings-scrim" hidden></div>
+      <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    </main>
+    <script src="./config.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
