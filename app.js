@@ -155,8 +155,12 @@
       const duration = 8.5 + (index % 5) * .55;
       const delay = -(index * 1.65);
       const drift = index % 2 ? '-22px' : '18px';
-      return `<figure class="memory-card ${photo.placeholder ? 'is-placeholder' : ''}" style="--left:${left}%;--width:${width}px;--height:${height}px;--rotate:${rotate}deg;--duration:${duration}s;--delay:${delay}s;--drift:${drift};--photo-a:${index % 2 ? '#4c68ad' : '#db7ca5'};--photo-b:${index % 2 ? '#59bee4' : '#f4c3d5'}"><img src="${escapeAttr(photo.src)}" alt="${escapeAttr(photo.caption)}" /><figcaption>${escapeHtml(photo.caption)}<span>${escapeHtml(photo.note)}</span></figcaption></figure>`;
+      return `<figure class="memory-card ${photo.placeholder ? 'is-placeholder' : ''}" style="--left:${left}%;--width:${width}px;--height:${height}px;--rotate:${rotate}deg;--duration:${duration}s;--delay:${delay}s;--drift:${drift};--photo-a:${index % 2 ? '#4c68ad' : '#db7ca5'};--photo-b:${index % 2 ? '#59bee4' : '#f4c3d5'}"><img loading="lazy" decoding="async" src="${escapeAttr(photo.src)}" alt="${escapeAttr(photo.caption)}" /><figcaption>${escapeHtml(photo.caption)}<span>${escapeHtml(photo.note)}</span></figcaption></figure>`;
     }).join('');
+    track.querySelectorAll('img').forEach((image, index) => image.addEventListener('error', () => {
+      image.src = placeholderData(index);
+      image.closest('.memory-card')?.classList.add('is-placeholder');
+    }, { once: true }));
   }
 
   function escapeHtml(value) { return String(value || '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char])); }
@@ -223,8 +227,10 @@
     if (backgroundFile) { const result = await readFileAsDataUrl(backgroundFile); state.config.background = result; }
     if (musicFile) { const result = await readFileAsDataUrl(musicFile); state.config.music = result; }
     if (photoFiles.length) {
+      const invalid = photoFiles.find((file) => !file.type.startsWith('image/'));
+      if (invalid) { showToast('Có file không phải ảnh, mình bỏ qua file đó.'); }
       const added = await Promise.all(photoFiles.map(async (file, index) => ({ src: await readFileAsDataUrl(file), caption: file.name.replace(/\.[^.]+$/, '') || `Ảnh ${state.config.photos.length + index + 1}`, note: 'Ảnh của chúng mình' })));
-      state.config.photos = [...(state.config.photos || []), ...added];
+      state.config.photos = [...(state.config.photos || []), ...added.filter((photo, index) => photoFiles[index].type.startsWith('image/'))];
     }
     persistConfig();
     setAudioSource(state.config.music);
