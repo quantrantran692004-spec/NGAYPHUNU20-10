@@ -55,3 +55,14 @@ revoke execute on function public.save_gift(text, jsonb) from public, anon, auth
 revoke execute on function public.get_gift(text) from public, anon, authenticated;
 grant execute on function public.save_gift(text, jsonb) to anon, authenticated;
 grant execute on function public.get_gift(text) to anon, authenticated;
+
+insert into storage.buckets (id, name, public)
+values ('gift-media', 'gift-media', true)
+on conflict (id) do update set public = true;
+
+drop policy if exists "anon can upload gift media" on storage.objects;
+create policy "anon can upload gift media"
+on storage.objects
+for insert
+to anon, authenticated
+with check (bucket_id = 'gift-media');

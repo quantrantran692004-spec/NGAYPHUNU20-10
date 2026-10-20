@@ -88,6 +88,54 @@
     return text ? JSON.parse(text) : null;
   }
 
+  const mediaBucket = 'gift-media';
+
+  function dataUrlToBlob(dataUrl) {
+    const [header, encoded] = String(dataUrl).split(',', 2);
+    if (!header || !encoded) throw new Error('Dữ liệu media không hợp lệ.');
+    const mime = header.match(/data:([^;]+)/)?.[1] || 'application/octet-stream';
+    const binary = atob(encoded);
+    const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+    return new Blob([bytes], { type: mime });
+  }
+
+  async function uploadMediaFile(path, blob) {
+    if (!supabaseUrl || !supabaseKey) throw new Error('Supabase chưa được cấu hình.');
+    const encodedPath = path.split('/').map(encodeURIComponent).join('/');
+    const response = await fetch(`${supabaseUrl}/storage/v1/object/${mediaBucket}/${encodedPath}`, {
+      method: 'POST',
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        'Content-Type': blob.type || 'application/octet-stream',
+        'x-upsert': 'false'
+      },
+      body: blob
+    });
+    if (!response.ok) throw new Error(`Supabase Storage upload thất bại (${response.status}).`);
+    return `${supabaseUrl}/storage/v1/object/public/${mediaBucket}/${encodedPath}`;
+  }
+
+  async function persistMediaConfig(shareId) {
+    const next = { ...state.config, photos: [...(state.config.photos || [])] };
+    const uploads = [];
+    if (typeof next.background === 'string' && next.background.startsWith('data:')) {
+      uploads.push(dataUrlToBlob(next.background).then((blob) => uploadMediaFile(`${shareId}/background.webp`, blob).then((url) => { next.background = url; })));
+    }
+    if (typeof next.music === 'string' && next.music.startsWith('data:')) {
+      uploads.push(dataUrlToBlob(next.music).then((blob) => uploadMediaFile(`${shareId}/music`, blob).then((url) => { next.music = url; })));
+    }
+    next.photos = next.photos.map((photo, index) => {
+      if (typeof photo?.src !== 'string' || !photo.src.startsWith('data:')) return photo;
+      if (photo.src.length < 4000) return photo;
+      const copy = { ...photo };
+      uploads.push(dataUrlToBlob(copy.src).then((blob) => uploadMediaFile(`${shareId}/photo-${index}.webp`, blob).then((url) => { copy.src = url; })));
+      return copy;
+    });
+    await Promise.all(uploads);
+    return next;
+  }
+
   async function loadRemoteGift() {
     if (!state.shareId || !isRecipientViewRequested() || readSharedConfig()) return;
     try {
@@ -775,6 +823,7 @@
     $('#photosInput').value = '';
     updateMediaStatus();
     state.shareId = createShareId();
+    state.config = await persistMediaConfig(state.shareId);
     await saveRemoteGift(state.shareId);
     createShareLink(false);
     $('#settingsPanel').classList.add('is-link-only');
@@ -783,7 +832,7 @@
     $('#shareResult').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     } catch (error) {
       console.error('Không lưu được thiệp:', error);
-      showToast('Chưa lưu được một số tệp. Hãy thử ảnh/nhạc nhỏ hơn.');
+      showToast('Chưa lưu được media. Hãy kiểm tra kết nối mạng rồi thử lại.');
     } finally {
       submitButton.disabled = false;
       submitButton.textContent = 'Lưu và tạo link riêng';

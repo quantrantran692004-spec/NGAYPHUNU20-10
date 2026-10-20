@@ -13,11 +13,11 @@ python3 -m http.server 3000
 Sau đó mở `http://localhost:3000`.
 
 ## Mỗi người tạo thiệp và link riêng trên điện thoại
-Mở trang thiệp, chạm `✦` để sửa tên, lời chúc, thư, ảnh nền, nhạc và album. Sau khi bấm **Lưu và tạo link riêng**, bạn nhận hai URL: **link gốc** để tiếp tục chỉnh sửa trên thiết bị này và **link người nhận** chứa nội dung đã lưu. Chỉ gửi link người nhận bằng Zalo, Messenger hoặc ứng dụng khác; nó mở ở chế độ xem và ẩn nút cài đặt. Mỗi lần lưu tạo mã người nhận mới; ảnh được nén trên điện thoại.
+Mở trang thiệp, chạm `✦` để sửa tên, lời chúc, thư, ảnh nền, nhạc và album. Sau khi bấm **Lưu và tạo link riêng**, bạn nhận hai URL: **link gốc** để tiếp tục chỉnh sửa trên thiết bị này và **link người nhận** chứa nội dung đã lưu. Chỉ gửi link người nhận bằng Zalo, Messenger hoặc ứng dụng khác; nó mở ở chế độ xem và ẩn nút cài đặt. Mỗi lần lưu tạo mã người nhận mới; ảnh được nén trên điện thoại, còn ảnh/nhạc được upload lên Supabase Storage để cấu hình không bị phình to.
 
 Ảnh vừa chọn sẽ hiện ngay trong danh sách để kiểm tra trước khi lưu. Mỗi ảnh có ô sửa chú thích/ghi chú, chọn **Vừa khung · không cắt** hoặc **Phủ khung · có thể cắt**, canh **giữa/trên/dưới/trái/phải**, nút **↑/↓** đổi thứ tự, **Đổi** thay ảnh và **×** xóa. Mặc định ảnh mới là **vừa khung, không cắt**. Ảnh nền và nhạc có thể thay hoặc gỡ; khi có thay đổi chưa lưu, link người nhận cũ bị khóa để tránh gửi nhầm.
 
-Trang vẫn là frontend tĩnh trên GitHub Pages, nhưng khi bấm **Lưu và tạo link riêng**, cấu hình được lưu vào Supabase bằng `share_id`; link người nhận chỉ mang mã này nên không còn nhúng toàn bộ ảnh/nhạc vào URL. Link `gift=` cũ vẫn được đọc để không làm hỏng các thiệp đã gửi trước đây. Chế độ người nhận **chỉ ẩn giao diện cài đặt, không phải kiểm soát truy cập tuyệt đối** — bất kỳ ai có link đều có thể mở hoặc chuyển tiếp thiệp. Không nhúng thông tin nhạy cảm.
+Trang vẫn là frontend tĩnh trên GitHub Pages, nhưng khi bấm **Lưu và tạo link riêng**, cấu hình được lưu vào Supabase bằng `share_id`; media mới được upload vào bucket Storage `gift-media`, còn link người nhận chỉ mang mã này nên không nhúng toàn bộ ảnh/nhạc vào URL. Link `gift=` cũ vẫn được đọc để không làm hỏng các thiệp đã gửi trước đây. Chế độ người nhận **chỉ ẩn giao diện cài đặt, không phải kiểm soát truy cập tuyệt đối** — bất kỳ ai có link đều có thể mở hoặc chuyển tiếp thiệp. Không nhúng thông tin nhạy cảm.
 
 ## Thay ảnh, nhạc và lời chúc cho người yêu
 
@@ -51,4 +51,4 @@ Xem [hướng dẫn gửi link, làm mới ảnh preview và các lưu ý riêng
 
 Repository đã có `index.html` ở thư mục gốc, các đường dẫn đều tương đối và có `.nojekyll`. Trên GitHub, mở **Settings → Pages**, chọn **Deploy from a branch**, chọn nhánh **main** và thư mục **/ (root)**, sau đó nhấn **Save**. Đợi GitHub hoàn tất rồi dùng URL dạng `https://TEN-TAI-KHOAN.github.io/TEN-REPOSITORY/`.
 
-Website vẫn không cần máy chủ ứng dụng riêng hoặc đăng nhập. Supabase chỉ cung cấp Data API/RPC để lưu và tải cấu hình thiệp; publishable key nằm trong frontend và quyền truy cập được giới hạn bằng RLS. Nhạc có thể bị trình duyệt chặn autoplay; người nhận chỉ cần chạm mở quà hoặc bấm nút `♫` để phát.
+Website vẫn không cần máy chủ ứng dụng riêng hoặc đăng nhập. Supabase cung cấp Data API/RPC để lưu và tải cấu hình thiệp cùng Storage để lưu media; publishable key nằm trong frontend và quyền truy cập được giới hạn bằng RLS/policy upload. Nhạc có thể bị trình duyệt chặn autoplay; người nhận chỉ cần chạm mở quà hoặc bấm nút `♫` để phát.
