@@ -431,9 +431,6 @@
     if (!src) return;
     audio.src = src;
     audio.load();
-    // Attempt autoplay on page/open. Browsers may block audible autoplay until
-    // a user gesture; the open-gift click handler retries from that gesture.
-    audio.play().catch(() => {});
   }
 
   function applyBackground(src) {
@@ -449,8 +446,20 @@
     }
   }
 
-  function openSettings() { if (state.recipientView) return; $('#settingsPanel').classList.add('is-open'); $('#settingsPanel').setAttribute('aria-hidden', 'false'); $('#settingsScrim').hidden = false; }
-  function closeSettings() { $('#settingsPanel').classList.remove('is-open'); $('#settingsPanel').setAttribute('aria-hidden', 'true'); $('#settingsScrim').hidden = true; }
+  function openSettings() {
+    if (state.recipientView) return;
+    $('#settingsPanel').classList.remove('is-link-only');
+    app.classList.remove('is-link-result');
+    $('#settingsPanel').classList.add('is-open');
+    $('#settingsPanel').setAttribute('aria-hidden', 'false');
+    $('#settingsScrim').hidden = false;
+  }
+  function closeSettings() {
+    $('#settingsPanel').classList.remove('is-open', 'is-link-only');
+    app.classList.remove('is-link-result');
+    $('#settingsPanel').setAttribute('aria-hidden', 'true');
+    $('#settingsScrim').hidden = true;
+  }
 
   function applyRecipientView() {
     state.recipientView = isRecipientViewRequested();
@@ -623,7 +632,7 @@
     $('#shareLinkOutput').value = state.shareUrl;
     $('#shareLinkNote').textContent = state.shareUrl.length > 1800000
       ? 'Link chứa ảnh/nhạc quá dài; một số điện thoại có thể không sao chép hoặc mở ổn định. Hãy dùng tệp nhỏ hơn rồi lưu lại.'
-      : 'Đây là link duy nhất, chứa cấu hình thiệp tại thời điểm lưu. Gửi link này cho người nhận.';
+      : 'Link mới này chứa cấu hình hiện tại. Link đã tạo trước đó vẫn giữ cấu hình cũ; hãy sao chép và gửi link mới bên dưới.';
     $('#copyRecipientLink').disabled = false;
     $('#sendShareLink').disabled = false;
     return state.shareUrl;
@@ -712,6 +721,8 @@
     $('#photosInput').value = '';
     updateMediaStatus();
     createShareLink(true);
+    $('#settingsPanel').classList.add('is-link-only');
+    app.classList.add('is-link-result');
     showToast(locallyPersisted ? 'Đã lưu nội dung và tạo link mới.' : 'Đã tạo link mới; bộ nhớ cục bộ đầy nên hãy sao chép link gốc để giữ bản chỉnh sửa.');
     $('#shareResult').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     } catch (error) {

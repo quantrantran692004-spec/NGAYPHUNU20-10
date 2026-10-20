@@ -678,6 +678,15 @@ button { cursor: pointer; }
 .letter-body + .letter-signature { transition: opacity .5s ease; }
 .letter-body.is-writing + .letter-signature { opacity: 0; }
 @keyframes letterPenBlink { to { visibility: hidden; } }
+
+/* Sau khi lưu, chỉ giữ lại thẻ link để người tạo dễ sao chép hoặc gửi. */
+#app.is-link-result #settingsToggle { visibility: hidden; pointer-events: none; }
+.settings-panel.is-link-only { display: flex; align-items: center; padding-top: max(20px, env(safe-area-inset-top)); }
+.settings-panel.is-link-only .settings-panel__header { position: absolute; top: max(10px, env(safe-area-inset-top)); right: max(16px, env(safe-area-inset-right)); }
+.settings-panel.is-link-only .settings-panel__header > div,
+.settings-panel.is-link-only .settings-note,
+.settings-panel.is-link-only .settings-form > :not(#shareResult) { display: none !important; }
+.settings-panel.is-link-only .settings-form { width: 100%; padding: 0; }
 .scene--gallery .memory-card img { object-fit: var(--photo-fit, contain); object-position: var(--photo-position, center); }
 .photo-upload-control { display: grid; gap: 8px; }
 .photo-upload-control .secondary-button { width: 100%; min-height: 48px; border-radius: 13px; color: #243253; background: linear-gradient(100deg, #ffe5ec, #d9f5ff); font: 700 13px Manrope, sans-serif; }
