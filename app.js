@@ -620,12 +620,20 @@
     const baseUrl = `${window.location.origin}${window.location.pathname}`;
     const gift = encodeSharedConfig(state.config);
     const sid = encodeURIComponent(state.shareId);
-    state.shareUrl = `${baseUrl}?gift=${gift}&sid=${sid}&view=recipient`;
+    const payload = `gift=${gift}&sid=${sid}&view=recipient`;
+    const queryUrl = `${baseUrl}?${payload}`;
+    const fragmentUrl = `${baseUrl}#${payload}`;
+    // GitHub Pages rejects sufficiently long query strings with HTTP 414.
+    // Keep short links in the query; put larger gift payloads in the fragment,
+    // which browsers do not send to the server.
+    state.shareUrl = queryUrl.length <= 4000 ? queryUrl : fragmentUrl;
     $('#shareResult').hidden = false;
     $('#shareLinkOutput').value = state.shareUrl;
     $('#shareLinkNote').textContent = state.shareUrl.length > 1800000
       ? 'Link chứa ảnh/nhạc quá dài; một số điện thoại có thể không sao chép hoặc mở ổn định. Hãy dùng tệp nhỏ hơn rồi lưu lại.'
-      : 'Link mới này chứa cấu hình hiện tại. Link đã tạo trước đó vẫn giữ cấu hình cũ; hãy sao chép và gửi link mới bên dưới.';
+      : state.shareUrl.includes('#gift=')
+        ? 'Cấu hình có tệp ảnh/nhạc nên được đặt sau dấu # để tránh GitHub Pages từ chối link dài. Hãy gửi đầy đủ link mới này; link cũ vẫn giữ cấu hình cũ.'
+        : 'Link mới này chứa cấu hình hiện tại. Link đã tạo trước đó vẫn giữ cấu hình cũ; hãy sao chép và gửi link mới bên dưới.';
     $('#copyRecipientLink').disabled = false;
     $('#sendShareLink').disabled = false;
     return state.shareUrl;
@@ -676,8 +684,12 @@
     }
     const button = $('#sendShareLink');
     try {
-      const shareData = { title: `Thiệp 20/10 gửi ${state.config.recipient}`, url };
-      if (navigator.canShare && !navigator.canShare({ url })) {
+      const title = `Thiệp 20/10 gửi ${state.config.recipient}`;
+      const usesFragment = url.includes('#gift=');
+      // Send a fragment URL as plain text so share targets don't normalize it
+      // away; short query URLs can use the structured URL field.
+      const shareData = usesFragment ? { title, text: url } : { title, url };
+      if (navigator.canShare && !navigator.canShare(usesFragment ? { text: url } : { url })) {
         showToast('Điện thoại không chấp nhận link dài này để chia sẻ. Hãy giảm dung lượng ảnh/nhạc rồi lưu link mới.');
         return;
       }
