@@ -679,14 +679,67 @@
     return 'Chưa sao chép được tự động. Link đã được chọn; hãy nhấn giữ để sao chép thủ công.';
   }
 
+  function showCopyFallback(text) {
+    const panel = $('#copyFallback');
+    if (!panel || !text) return;
+    $('#copyFallbackValue').value = text;
+    $('#copyFallbackHelp').textContent = 'Thủ công: chạm “Chọn link”, sau đó nhấn giữ phần link và chọn “Sao chép”.';
+    panel.hidden = false;
+    $('#closeCopyFallback').focus({ preventScroll: true });
+  }
+
+  async function retryClipboardCopy() {
+    const text = $('#copyFallbackValue').value;
+    try {
+      if (!window.isSecureContext || !navigator.clipboard?.writeText) throw new Error('Clipboard API không khả dụng');
+      await navigator.clipboard.writeText(text);
+      $('#copyFallback').hidden = true;
+      showToast('Đã sao chép link vào bảng tạm.');
+    } catch (error) {
+      console.warn('Sao chép lại từ bảng dự phòng không thành công:', error);
+      $('#copyFallbackHelp').textContent = 'Điện thoại vẫn chặn sao chép. Hãy thử “Mở bảng chia sẻ” hoặc chọn link rồi nhấn giữ để sao chép.';
+      $('#copyFallbackValue').focus({ preventScroll: true });
+      $('#copyFallbackValue').select();
+      showToast('Chưa sao chép được. Hãy chọn một phương án dự phòng bên dưới.');
+    }
+  }
+
+  async function openFallbackShare() {
+    const text = $('#copyFallbackValue').value;
+    if (!navigator.share) {
+      $('#copyFallbackHelp').textContent = 'Trình duyệt này không có bảng chia sẻ. Chọn link rồi nhấn giữ để sao chép.';
+      return;
+    }
+    try {
+      await navigator.share({ title: 'Link thiệp 20/10', text: 'Chọn “Sao chép” trong bảng chia sẻ để lưu link.', url: text });
+      $('#copyFallback').hidden = true;
+      showToast('Đã mở bảng chia sẻ. Chọn “Sao chép” để lưu link.');
+    } catch (error) {
+      if (error.name !== 'AbortError') console.warn('Bảng chia sẻ không mở được:', error);
+      $('#copyFallbackHelp').textContent = 'Không mở được bảng chia sẻ. Hãy thử sao chép lại hoặc chọn link để sao chép thủ công.';
+    }
+  }
+
+  function selectFallbackLink() {
+    const input = $('#copyFallbackValue');
+    input.focus({ preventScroll: true });
+    input.select();
+    try { input.setSelectionRange(0, input.value.length); } catch (error) { /* Một số trình duyệt không hỗ trợ. */ }
+    $('#copyFallbackHelp').textContent = 'Link đã được chọn. Nhấn giữ phần chữ được chọn rồi chọn “Sao chép” trong menu điện thoại.';
+  }
+
   async function copyOwnerLink() {
-    const status = await copyText($('#ownerLinkOutput').value, '#ownerLinkOutput');
+    const text = $('#ownerLinkOutput').value;
+    const status = await copyText(text, '#ownerLinkOutput');
     showToast(copyStatusMessage(status, 'Đã sao chép link gốc để chỉnh sửa.'));
+    if (status === 'manual') showCopyFallback(text);
   }
 
   async function copyPersonalLink() {
-    const status = await copyText($('#shareLinkOutput').value);
+    const text = $('#shareLinkOutput').value;
+    const status = await copyText(text);
     showToast(copyStatusMessage(status, 'Đã sao chép link riêng của bạn.'));
+    if (status === 'manual') showCopyFallback(text);
   }
 
   async function sendPersonalLink() {
@@ -702,6 +755,7 @@
     }
     const status = await copyText(url, '#shareLinkOutput', false);
     showToast(copyStatusMessage(status, 'Đã sao chép link người nhận.'));
+    if (status === 'manual') showCopyFallback(url);
   }
 
   async function handleSettingsSubmit(event) {
@@ -774,6 +828,7 @@
     }
     const status = await copyText(url, '#shareLinkOutput', false);
     showToast(copyStatusMessage(status, 'Đã sao chép link riêng của thiệp.'));
+    if (status === 'manual') showCopyFallback(url);
   }
 
   function toggleMusic() {
@@ -836,6 +891,11 @@
     $('#copyOwnerLink').addEventListener('click', copyOwnerLink);
     $('#copyShareLink').addEventListener('click', copyPersonalLink);
     $('#sendShareLink').addEventListener('click', sendPersonalLink);
+    $('#closeCopyFallback').addEventListener('click', () => { $('#copyFallback').hidden = true; });
+    $('#retryClipboard').addEventListener('click', retryClipboardCopy);
+    $('#openFallbackShare').addEventListener('click', openFallbackShare);
+    $('#selectFallbackValue').addEventListener('click', selectFallbackLink);
+    $('#copyFallback').addEventListener('click', (event) => { if (event.target === $('#copyFallback')) $('#copyFallback').hidden = true; });
     $('#choosePhotosButton').addEventListener('click', () => $('#photosInput').click());
     $('#photosInput').addEventListener('change', handlePhotoSelection);
     $('#backgroundInput').addEventListener('change', () => {
