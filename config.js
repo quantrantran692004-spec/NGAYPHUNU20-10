@@ -6,8 +6,8 @@
  * Không dùng đường dẫn bắt đầu bằng / vì GitHub Pages chạy trong repository con.
  */
 window.GIFT_CONFIG = {
-  recipient: "Em yêu",
-  sender: "Anh",
+  recipient: "CHỊ EM PHỤ NỮ",
+  sender: "MINH",
   title: "Happy Vietnamese Women's Day 20/10",
   greeting: "Cảm ơn em vì đã làm những ngày bình thường của anh trở nên thật đặc biệt.",
   letter: "Em à,\n\nNgày 20/10 này anh chỉ muốn nói rằng anh thật may mắn vì có em bên cạnh. Cảm ơn em vì nụ cười, sự dịu dàng và những điều nhỏ xíu em mang đến cho cuộc sống của anh.\n\nMong em luôn vui, luôn xinh đẹp và luôn nhớ rằng anh thương em rất nhiều.",

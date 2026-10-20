@@ -280,7 +280,7 @@
     $('#coverTitle').innerHTML = coverTitleMarkup;
     $('#bloomGreeting').textContent = state.config.greeting;
     $('#bloomTitle').innerHTML = `${escapeHtml(state.config.title).replace('20/10', '<em>20/10</em>')}`;
-    $('#letterHeading').textContent = `Gửi ${state.config.recipient}, người anh yêu`;
+    $('#letterHeading').textContent = `Gửi ${state.config.recipient}`;
     $('#letterBody').textContent = state.config.letter;
     $('#letterSignature').innerHTML = `Thương ${escapeHtml(state.config.recipient)} thật nhiều,<br /><strong>${escapeHtml(state.config.sender)}</strong>`;
     $('#galleryHeading').innerHTML = `Vẫn gần ${escapeHtml(state.config.recipient)},<br /><em>dù xa cách</em>`;
@@ -300,10 +300,12 @@
         const audio = $('#bgMusic');
         if (audio.src) {
           audio.muted = false;
-          audio.play().then(() => syncMusicButton(true)).catch((error) => {
-            console.warn('Không phát được nhạc sau khi hoa nở:', error);
-            showToast('Chạm nút ♫ ở góc trên để bật nhạc.');
-          });
+          if (audio.paused) {
+            audio.play().then(() => syncMusicButton(true)).catch((error) => {
+              console.warn('Không phát được nhạc sau khi hoa nở:', error);
+              showToast('Chạm nút ♫ ở góc trên để bật nhạc.');
+            });
+          } else syncMusicButton(true);
         }
       }, 4500);
     }, 1700);
