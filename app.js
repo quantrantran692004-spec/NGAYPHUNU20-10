@@ -633,6 +633,18 @@
 
   async function copyText(text, fallbackSelector = '#shareLinkOutput', useShareFallback = true) {
     if (!text) return 'failed';
+    const isMobile = navigator.userAgentData?.mobile || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || matchMedia('(max-width: 700px)').matches;
+    // iOS/Safari and some Android browsers can reject clipboard writes. Invoke
+    // Web Share synchronously from the tap handler before any awaited operation,
+    // otherwise transient user activation may be lost.
+    if (useShareFallback && isMobile && navigator.share) {
+      try {
+        await navigator.share({ title: 'Link thiệp 20/10', text: 'Chọn “Sao chép” trong bảng chia sẻ để lưu link.', url: text });
+        return 'shared';
+      } catch (error) {
+        if (error.name !== 'AbortError') console.warn('Không mở được bảng chia sẻ hệ thống:', error);
+      }
+    }
     try {
       if (window.isSecureContext && navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(text);
@@ -641,7 +653,7 @@
     } catch (error) {
       console.warn('Clipboard API bị chặn; thử cách sao chép tương thích hơn:', error);
     }
-    if (useShareFallback && navigator.share) {
+    if (useShareFallback && !isMobile && navigator.share) {
       try {
         await navigator.share({ title: 'Link thiệp 20/10', text: 'Chọn “Sao chép” trong bảng chia sẻ để lưu link.', url: text });
         return 'shared';
