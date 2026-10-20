@@ -768,7 +768,7 @@
     try {
       // Call immediately from this click so mobile browsers retain user activation.
       const sharePromise = navigator.share({ title: 'Link thiệp 20/10', url });
-      showToast('Đã mở bảng chia sẻ. Chọn “Sao chép” để lưu link.');
+      showToast('Đã mở bảng chia sẻ; chưa xác nhận link đã được sao chép. Nếu điện thoại báo lỗi, dùng “Chọn link thủ công”.');
       sharePromise.catch((error) => {
         if (error.name !== 'AbortError') {
           console.warn('Không mở được bảng chia sẻ:', error);
@@ -779,6 +779,12 @@
       console.warn('Không mở được bảng chia sẻ:', error);
       showCopyFallback(url);
     }
+  }
+
+  function openManualCopy() {
+    const url = $('#shareLinkOutput').value || createShareLink();
+    showCopyFallback(url);
+    selectFallbackLink();
   }
 
   async function handleSettingsSubmit(event) {
@@ -915,6 +921,7 @@
     $('#copyShareLink').addEventListener('click', copyPersonalLink);
     $('#sendShareLink').addEventListener('click', sendPersonalLink);
     $('#openDeviceShare').addEventListener('click', openDeviceShare);
+    $('#openManualCopy').addEventListener('click', openManualCopy);
     $('#closeCopyFallback').addEventListener('click', () => { $('#copyFallback').hidden = true; });
     $('#retryClipboard').addEventListener('click', retryClipboardCopy);
     $('#openFallbackShare').addEventListener('click', openFallbackShare);
