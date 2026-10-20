@@ -8,4 +8,6 @@
 - [x] **Điều khiển:** bật/tắt nhạc sau tương tác, chuyển tiếp, xem lại từ đầu, chia sẻ/copy link, thao tác chạm thân thiện.
 - [x] **Cá nhân hóa:** sửa ảnh, nhạc, ảnh nền tùy chọn, người nhận, người gửi, tiêu đề, lời chúc và thư; lưu bản xem trước trong trình duyệt; có hướng dẫn `assets/` và `config.js` cho link GitHub Pages.
 - [x] **GitHub Pages:** cấu trúc static đầy đủ, đường dẫn tương đối, `manus-routes.json`, `.nojekyll`, README hướng dẫn bật Pages.
+- [x] **Link cá nhân sau mỗi lần lưu:** từ link thiệp gốc, mỗi người chỉnh tên, lời chúc/thư, nhạc, ảnh nền và ảnh kỷ niệm; khi bấm lưu, ứng dụng tạo ngay một URL riêng kèm mã ngẫu nhiên, hiện nút gửi/sao chép trên điện thoại. URL riêng chứa bản cấu hình để người nhận mở được đúng nội dung; link của các lần lưu khác nhau không trùng nhau.
+- [x] **Tối ưu thao tác trên điện thoại:** bảng chỉnh thiệp cuộn độc lập, vùng bấm tối thiểu 48px, trường nhập 16px tránh tự phóng to trên iPhone, chọn nhiều ảnh và nén ảnh trước khi nhúng vào link.
 - [ ] **Ảnh và nhạc thật:** chờ người dùng đặt ảnh cá nhân và file nhạc vào `assets/`; phần mềm có placeholder rõ ràng khi chưa có file.

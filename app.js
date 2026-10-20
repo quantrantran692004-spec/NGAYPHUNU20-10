@@ -7,6 +7,8 @@
   const state = {
     screen: 'cover',
     config: loadConfig(),
+    shareId: window.location.hash.match(/(?:^#|&)sid=([^&]+)/)?.[1] || '',
+    shareUrl: '',
     photos: [],
     audioUrl: '',
     backgroundUrl: '',
@@ -41,6 +43,10 @@
       console.warn('Link thiệp không hợp lệ:', error);
       return null;
     }
+  }
+
+  function createShareId() {
+    return window.crypto?.randomUUID?.() || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
   }
 
   function encodeSharedConfig(config) {
@@ -234,8 +240,66 @@
 
   function readFileAsDataUrl(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); }); }
 
+  async function compressImage(file, maxEdge = 1280) {
+    if (!file.type.startsWith('image/') || !window.createImageBitmap) return readFileAsDataUrl(file);
+    try {
+      const bitmap = await createImageBitmap(file);
+      const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+      canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+      canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      bitmap.close?.();
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/webp', .76));
+      return blob ? readFileAsDataUrl(blob) : readFileAsDataUrl(file);
+    } catch (error) {
+      console.warn('Không nén được ảnh, dùng ảnh gốc:', error);
+      return readFileAsDataUrl(file);
+    }
+  }
+
+  function createShareLink(makeNewId = false) {
+    if (makeNewId || !state.shareId) state.shareId = createShareId();
+    state.shareUrl = `${window.location.origin}${window.location.pathname}${window.location.search}#gift=${encodeSharedConfig(state.config)}&sid=${encodeURIComponent(state.shareId)}`;
+    window.history.replaceState(null, '', state.shareUrl);
+    $('#shareResult').hidden = false;
+    $('#shareLinkOutput').value = state.shareUrl;
+    $('#shareLinkNote').textContent = state.shareUrl.length > 1800000
+      ? 'Link quá dài để gửi thuận tiện. Hãy dùng ảnh nhỏ hơn hoặc đặt ảnh/nhạc trong assets/ rồi tạo link mới.'
+      : 'Link chứa nội dung thiệp riêng của bạn. Gửi link này để người nhận mở đúng phiên bản đã lưu.';
+    return state.shareUrl;
+  }
+
+  async function copyText(text) {
+    try {
+      if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(text); return true; }
+    } catch (error) { console.warn('Không dùng được clipboard API:', error); }
+    const input = $('#shareLinkOutput');
+    input.focus(); input.select(); input.setSelectionRange(0, input.value.length);
+    try { return document.execCommand('copy'); } catch (error) { return false; }
+  }
+
+  async function copyPersonalLink() {
+    const copied = await copyText($('#shareLinkOutput').value);
+    showToast(copied ? 'Đã sao chép link riêng của bạn.' : 'Hãy nhấn giữ link để sao chép.');
+  }
+
+  async function sendPersonalLink() {
+    const url = $('#shareLinkOutput').value || createShareLink();
+    if (navigator.share) {
+      try { await navigator.share({ title: 'Thiệp 20/10 của riêng mình', text: `Một món quà dành cho ${state.config.recipient}`, url }); }
+      catch (error) { if (error.name !== 'AbortError') showToast('Chưa gửi được; bạn có thể sao chép link.'); }
+      return;
+    }
+    await copyPersonalLink();
+  }
+
   async function handleSettingsSubmit(event) {
     event.preventDefault();
+    const submitButton = $('#settingsForm button[type="submit"]');
+    submitButton.disabled = true;
+    submitButton.textContent = 'Đang lưu và tạo link…';
+    try {
     state.config.recipient = $('#recipientInput').value.trim() || defaults.recipient;
     state.config.sender = $('#senderInput').value.trim() || defaults.sender;
     state.config.title = $('#titleInput').value.trim() || defaults.title;
@@ -244,21 +308,42 @@
     const backgroundFile = $('#backgroundInput').files[0];
     const musicFile = $('#musicInput').files[0];
     const photoFiles = [...$('#photosInput').files];
-    if (backgroundFile) { const result = await readFileAsDataUrl(backgroundFile); state.config.background = result; }
-    if (musicFile) { const result = await readFileAsDataUrl(musicFile); state.config.music = result; }
+    if (backgroundFile) {
+      if (backgroundFile.type.startsWith('image/')) state.config.background = await compressImage(backgroundFile, 1600);
+      else showToast('Ảnh nền cần là một tệp hình ảnh.');
+    }
+    if (musicFile) {
+      if (!musicFile.type || musicFile.type.startsWith('audio/')) state.config.music = await readFileAsDataUrl(musicFile);
+      else showToast('Nhạc nền cần là một tệp âm thanh.');
+    }
     if (photoFiles.length) {
-      const invalid = photoFiles.find((file) => !file.type.startsWith('image/'));
-      if (invalid) { showToast('Có file không phải ảnh, mình bỏ qua file đó.'); }
-      const added = await Promise.all(photoFiles.map(async (file, index) => ({ src: await readFileAsDataUrl(file), caption: file.name.replace(/\.[^.]+$/, '') || `Ảnh ${state.config.photos.length + index + 1}`, note: 'Ảnh của chúng mình' })));
-      state.config.photos = [...(state.config.photos || []), ...added.filter((photo, index) => photoFiles[index].type.startsWith('image/'))];
+      const validFiles = photoFiles.filter((file) => file.type.startsWith('image/'));
+      if (validFiles.length !== photoFiles.length) showToast('Đã bỏ qua tệp không phải ảnh.');
+      const added = [];
+      for (const [index, file] of validFiles.entries()) {
+        const src = await compressImage(file, 1280);
+        added.push({ src, caption: file.name.replace(/\.[^.]+$/, '') || `Ảnh ${state.config.photos.length + index + 1}`, note: 'Ảnh của chúng mình' });
+      }
+      state.config.photos = [...(state.config.photos || []), ...added];
     }
     persistConfig();
     setAudioSource(state.config.music);
     applyBackground(state.config.background);
     prepareBloom();
     renderPhotoList();
-    closeSettings();
-    showToast('Đã lưu thay đổi trên trình duyệt này.');
+    $('#backgroundInput').value = '';
+    $('#musicInput').value = '';
+    $('#photosInput').value = '';
+    createShareLink(true);
+    showToast('Đã lưu và tạo link riêng. Bạn có thể sao chép hoặc gửi ngay.');
+    $('#shareResult').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    } catch (error) {
+      console.error('Không lưu được thiệp:', error);
+      showToast('Chưa lưu được một số tệp. Hãy thử ảnh/nhạc nhỏ hơn.');
+    } finally {
+      submitButton.disabled = false;
+      submitButton.textContent = 'Lưu và tạo link riêng';
+    }
   }
 
   function resetConfig() {
@@ -275,7 +360,7 @@
   }
 
   async function shareCard() {
-    const url = `${window.location.origin}${window.location.pathname}#gift=${encodeSharedConfig(state.config)}`;
+    const url = createShareLink();
     if (url.length > 1800000) showToast('Link rất dài vì có ảnh/nhạc nhúng; nên đặt file vào assets/ để link nhẹ hơn.');
     const shareData = { title: 'Một món quà 20/10', text: `Một món quà dành cho ${state.config.recipient}`, url };
     try {
@@ -292,6 +377,20 @@
   }
 
   function bindEvents() {
+    window.addEventListener('hashchange', () => {
+      const shared = readSharedConfig();
+      if (!shared) return;
+      state.config = mergeConfig(defaults, shared);
+      state.shareId = window.location.hash.match(/(?:^#|&)sid=([^&]+)/)?.[1] || '';
+      state.shareUrl = `${window.location.origin}${window.location.pathname}${window.location.search}${window.location.hash}`;
+      fillForm();
+      prepareBloom();
+      setAudioSource(state.config.music || '');
+      applyBackground(state.config.background || '');
+      $('#shareResult').hidden = true;
+      if (state.screen === 'gallery') renderGallery();
+      showToast('Đã mở nội dung của link thiệp này.');
+    });
     $('#openGift').addEventListener('click', () => { if ($('#bgMusic').src) $('#bgMusic').play().catch(() => {}); beginBloom(); });
     $('#readLetter').addEventListener('click', () => setScreen('letter'));
     $('#closeLetter').addEventListener('click', () => setScreen('bloom'));
@@ -305,6 +404,8 @@
     $('#exportButton').addEventListener('click', exportConfig);
     $('#restartButton').addEventListener('click', () => { clearTimeout(state.bloomTimer); clearTimeout(state.fadeTimer); setScreen('cover'); });
     $('#shareButton').addEventListener('click', shareCard);
+    $('#copyShareLink').addEventListener('click', copyPersonalLink);
+    $('#sendShareLink').addEventListener('click', sendPersonalLink);
     $('#photosInput').addEventListener('change', () => showToast(`${$('#photosInput').files.length} ảnh đã sẵn sàng để thêm.`));
     $('#backgroundInput').addEventListener('change', () => showToast('Ảnh nền sẽ phủ nhẹ lên nền xanh mẫu.'));
     $('#musicInput').addEventListener('change', () => showToast('Nhạc sẽ phát sau khi bạn chạm mở quà.'));

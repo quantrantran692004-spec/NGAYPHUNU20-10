@@ -12,6 +12,11 @@ python3 -m http.server 3000
 
 Sau đó mở `http://localhost:3000`.
 
+## Mỗi người tạo thiệp và link riêng trên điện thoại
+Mở link trang thiệp, chạm nút `✦` ở góc trên để sửa tên, lời chúc, thư, ảnh nền, nhạc và chọn nhiều ảnh. Bấm **Lưu và tạo link riêng**: link riêng hiện ngay bên dưới, dùng **Gửi link** để mở menu chia sẻ của điện thoại hoặc **Sao chép link** để gửi qua ứng dụng bạn chọn. Ảnh được nén trên điện thoại để link nhẹ hơn. Mỗi lần lưu sẽ cấp mã link riêng mới; ai mở link sẽ thấy đúng nội dung đã lưu.
+
+Đây là website tĩnh: dữ liệu cá nhân hóa nằm trong link chứ không được lưu trên máy chủ. Người có link có thể xem hoặc chuyển tiếp link. Với ảnh/nhạc lớn, link sẽ dài; giảm dung lượng hoặc đặt file trong `assets/` để dùng đường dẫn ngắn ổn định hơn.
+
 ## Thay ảnh, nhạc và lời chúc cho người yêu
 
 Cách ổn định nhất để người nhận thấy nội dung khi mở link GitHub Pages là đặt file thật vào thư mục `assets/`, rồi sửa `config.js`:
@@ -32,7 +37,7 @@ window.GIFT_CONFIG = {
 };
 ```
 
-Có thể thêm bao nhiêu ảnh tùy ý; album tự tạo nhịp bay khác nhau cho từng khung. Nếu chưa có ảnh/nhạc, website dùng các placeholder khác nhau và vẫn chạy đủ hiệu ứng. Bảng `✦` trên trang cho phép xem trước thay đổi ngay trong trình duyệt, nhưng file localStorage đó không tự truyền sang người khác; dùng nút **Xuất cấu hình** để tải `config.js`, thay file trong repository rồi push lại.
+Có thể thêm bao nhiêu ảnh tùy ý; album tự tạo nhịp bay khác nhau cho từng khung. Nếu chưa có ảnh/nhạc, website dùng các placeholder khác nhau và vẫn chạy đủ hiệu ứng. Bảng `✦` cho phép cá nhân hóa và xem trước trên điện thoại. Bấm **Lưu và tạo link riêng** để tạo link độc lập mang theo nội dung đã lưu; nút **Gửi link** hoặc **Sao chép link** xuất hiện ngay bên dưới. Nút **Xuất cấu hình** vẫn có thể dùng để thay nội dung mặc định cho toàn bộ khách mở link gốc.
 
 Nền xanh đêm chính được giữ cố định theo ảnh tham khảo. Ảnh nền tùy chọn chỉ phủ nhẹ lên bối cảnh mẫu, không thay thế phong cách bầu trời đêm.
 

@@ -108,19 +108,28 @@
           <div><p class="eyebrow">CÁ NHÂN HÓA MÓN QUÀ</p><h2 id="settingsHeading">Chỉnh thiệp của hai mình</h2></div>
           <button id="closeSettings" class="close-button" type="button" aria-label="Đóng phần cá nhân hóa">×</button>
         </div>
-        <p class="settings-note">Mỗi người có thể tự đổi ảnh, nhạc và lời chúc. Bấm <b>Chia sẻ thiệp</b> để tạo link riêng chứa nội dung đã sửa; file lớn nên đặt trong <code>assets/</code> để link nhẹ hơn.</p>
+        <p class="settings-note">Chỉnh tên, lời chúc, ảnh và nhạc cho riêng bạn. Khi lưu, thiệp sẽ tạo một link cá nhân để bạn gửi ngay.</p>
         <form id="settingsForm" class="settings-form">
           <label>Người nhận<input id="recipientInput" name="recipient" type="text" placeholder="Ví dụ: Em yêu" /></label>
           <label>Tên người gửi<input id="senderInput" name="sender" type="text" placeholder="Ví dụ: Anh" /></label>
           <label>Tiêu đề chính<textarea id="titleInput" name="title" rows="2"></textarea></label>
           <label>Lời chúc ngắn<textarea id="greetingInput" name="greeting" rows="3"></textarea></label>
           <label>Nội dung lá thư<textarea id="letterInput" name="letter" rows="7"></textarea></label>
-          <label>Ảnh nền tùy chọn<input id="backgroundInput" type="file" accept="image/*" /></label>
-          <label>Nhạc nền tùy chọn<input id="musicInput" type="file" accept="audio/*" /></label>
-          <label>Thêm ảnh kỷ niệm <span class="label-help">có thể chọn hơn 10 ảnh</span><input id="photosInput" type="file" accept="image/*" multiple /></label>
+          <label>Ảnh nền <span class="label-help">Chọn ảnh trong điện thoại</span><input id="backgroundInput" type="file" accept="image/*" /></label>
+          <label>Nhạc nền <span class="label-help">MP3, M4A hoặc tệp âm thanh</span><input id="musicInput" type="file" accept="audio/*" /></label>
+          <label>Ảnh kỷ niệm <span class="label-help">Chọn nhiều ảnh cùng lúc</span><input id="photosInput" type="file" accept="image/*" multiple /></label>
           <div id="photoList" class="photo-list"></div>
+          <section id="shareResult" class="share-result" aria-live="polite" hidden>
+            <p class="share-result__title">Thiệp của bạn đã sẵn sàng</p>
+            <p id="shareLinkNote" class="share-result__note">Link riêng được tạo sau khi lưu.</p>
+            <input id="shareLinkOutput" class="share-link-output" type="text" readonly aria-label="Link riêng của thiệp" />
+            <div class="share-result__actions">
+              <button id="sendShareLink" class="primary-button" type="button">Gửi link</button>
+              <button id="copyShareLink" class="secondary-button" type="button">Sao chép link</button>
+            </div>
+          </section>
           <div class="settings-actions">
-            <button class="primary-button" type="submit">Lưu thay đổi</button>
+            <button class="primary-button" type="submit">Lưu và tạo link riêng</button>
             <button id="exportButton" class="secondary-button" type="button">Xuất cấu hình</button>
             <button id="resetButton" class="text-button" type="button">Khôi phục mặc định</button>
           </div>
@@ -130,6 +139,6 @@
       <div id="toast" class="toast" role="status" aria-live="polite"></div>
     </main>
     <script src="./config.js"></script>
-    <script src="./app.js?v=share-links-v2"></script>
+    <script src="./app.js?v=mobile-share-v3"></script>
   </body>
 </html>
