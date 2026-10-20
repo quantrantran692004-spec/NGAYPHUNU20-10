@@ -120,16 +120,16 @@
     const next = { ...state.config, photos: [...(state.config.photos || [])] };
     const uploads = [];
     if (typeof next.background === 'string' && next.background.startsWith('data:')) {
-      uploads.push(dataUrlToBlob(next.background).then((blob) => uploadMediaFile(`${shareId}/background.webp`, blob).then((url) => { next.background = url; })));
+      uploads.push(uploadMediaFile(`${shareId}/background.webp`, dataUrlToBlob(next.background)).then((url) => { next.background = url; }));
     }
     if (typeof next.music === 'string' && next.music.startsWith('data:')) {
-      uploads.push(dataUrlToBlob(next.music).then((blob) => uploadMediaFile(`${shareId}/music`, blob).then((url) => { next.music = url; })));
+      uploads.push(uploadMediaFile(`${shareId}/music`, dataUrlToBlob(next.music)).then((url) => { next.music = url; }));
     }
     next.photos = next.photos.map((photo, index) => {
       if (typeof photo?.src !== 'string' || !photo.src.startsWith('data:')) return photo;
       if (photo.src.length < 4000) return photo;
       const copy = { ...photo };
-      uploads.push(dataUrlToBlob(copy.src).then((blob) => uploadMediaFile(`${shareId}/photo-${index}.webp`, blob).then((url) => { copy.src = url; })));
+      uploads.push(uploadMediaFile(`${shareId}/photo-${index}.webp`, dataUrlToBlob(copy.src)).then((url) => { copy.src = url; }));
       return copy;
     });
     await Promise.all(uploads);
