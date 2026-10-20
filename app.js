@@ -744,8 +744,7 @@
     if (makeNewId || !state.shareId) state.shareId = createShareId();
     state.isDirty = false;
     const baseUrl = `${window.location.origin}${window.location.pathname}`;
-    const versionedBase = `${baseUrl}?app=gift-v27`;
-    state.shareUrl = `${versionedBase}&sid=${encodeURIComponent(state.shareId)}&view=recipient`;
+    state.shareUrl = `${baseUrl}?sid=${encodeURIComponent(state.shareId)}&view=recipient`;
     $('#shareResult').hidden = false;
     $('#shareLinkOutput').value = state.shareUrl;
     $('#shareLinkNote').textContent = 'Link người nhận lưu cấu hình trên Supabase; link cũ vẫn giữ nội dung cũ.';
@@ -800,7 +799,7 @@
     const button = $('#sendShareLink');
     try {
       const title = `Thiệp 20/10 gửi ${state.config.recipient}`;
-      const shareData = { title, url };
+      const shareData = { title, text: 'Mở thiệp 20/10 này nhé — một món quà nhỏ dành riêng cho em.', url };
       // Invoke the native API before touching button state so the original tap
       // remains the direct user activation required by iOS/Android browsers.
       state.isSharing = true;
@@ -902,7 +901,7 @@
     }
     const url = createShareLink();
     if (url.length > 1800000) showToast('Link rất dài do có ảnh/nhạc nhúng; nên dùng tệp nhỏ hơn.');
-    const shareData = { title: `Thiệp 20/10 gửi ${state.config.recipient}`, url };
+    const shareData = { title: `Thiệp 20/10 gửi ${state.config.recipient}`, text: 'Mở thiệp 20/10 này nhé — một món quà nhỏ dành riêng cho em.', url };
     if (navigator.share) {
       try { await navigator.share(shareData); showToast('Đã mở bảng chia sẻ.'); return; }
       catch (error) { if (error.name === 'AbortError') return; console.warn('Không mở được bảng chia sẻ:', error); }
