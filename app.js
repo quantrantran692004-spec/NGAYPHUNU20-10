@@ -68,22 +68,9 @@
   }
 
   function setupEmbeddedBrowserNotice() {
-    const notice = $('#embeddedBrowserNotice');
-    const button = $('#openExternalBrowser');
     const name = embeddedBrowserName();
-    if (!notice || !button || !state.recipientView || !name) return;
-    $('#embeddedBrowserText').textContent = `Bạn đang mở từ ${name}. Mở Safari/Chrome để xem đủ tính năng và phát nhạc ổn định hơn.`;
-    notice.hidden = false;
-    button.addEventListener('click', () => {
-      const ua = navigator.userAgent || '';
-      if (/Android/i.test(ua)) {
-        const target = `${window.location.host}${window.location.pathname}${window.location.search}${window.location.hash}`;
-        window.location.href = `intent://${target}#Intent;scheme=https;end`;
-        setTimeout(() => showToast('Nếu chưa mở trình duyệt, hãy chọn menu ⋯ rồi chọn Mở bằng trình duyệt.'), 900);
-      } else {
-        showToast('Hãy chạm menu ⋯ của ứng dụng rồi chọn Mở bằng Safari hoặc trình duyệt. iPhone không cho website tự ép thoát khỏi ứng dụng.');
-      }
-    }, { once: true });
+    if (!state.recipientView || !name) return;
+    showToast(`Đang mở từ ${name}. Safari/Chrome sẽ cho trải nghiệm đầy đủ hơn.`);
   }
 
   function createShareId() {
@@ -308,7 +295,17 @@
     clearTimeout(state.bloomTimer);
     state.bloomTimer = setTimeout(() => {
       bloom.classList.add('is-bouquet');
-      state.bloomTimer = setTimeout(() => { $('#bloomActions').hidden = false; }, 4500);
+      state.bloomTimer = setTimeout(() => {
+        $('#bloomActions').hidden = false;
+        const audio = $('#bgMusic');
+        if (audio.src) {
+          audio.muted = false;
+          audio.play().then(() => syncMusicButton(true)).catch((error) => {
+            console.warn('Không phát được nhạc sau khi hoa nở:', error);
+            showToast('Chạm nút ♫ ở góc trên để bật nhạc.');
+          });
+        }
+      }, 4500);
     }, 1700);
   }
 
@@ -938,9 +935,8 @@
     $('#openGift').addEventListener('click', () => {
       const audio = $('#bgMusic');
       if (audio.src) {
-        audio.play()
-          .then(() => syncMusicButton(true))
-          .catch((error) => { console.warn('Không phát được nhạc khi mở quà:', error); showToast('Điện thoại đã chặn nhạc. Hãy chạm nút ♫ ở góc trên để thử phát.'); });
+        audio.muted = true;
+        audio.play().catch((error) => console.warn('Không khởi tạo được nhạc:', error));
       }
       beginBloom();
     });
