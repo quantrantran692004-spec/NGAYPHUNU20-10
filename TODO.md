@@ -14,7 +14,8 @@
 - [x] **Hai link tách biệt:** giữ link gốc để chỉnh sửa trên trình duyệt đã lưu; link người nhận mang cấu hình riêng, mở ở chế độ xem và ẩn nút cài đặt. Đây là ẩn giao diện, không phải bảo vệ truy cập.
 - [x] **Khung ảnh có thể chọn:** ảnh mới mặc định vừa khung không cắt; từng ảnh có thể chuyển sang phủ khung và canh giữa/trên/dưới/trái/phải, các lựa chọn theo cùng cấu hình vào link người nhận.
 - [x] **Viền ảnh phát sáng:** ảnh thật trong album có viền trắng-xanh và quầng sáng nhịp nhẹ.
-- [x] **Cảnh nền theo ảnh tham chiếu:** trời đêm cobalt/navy có 86 sao, 12 sao băng thưa với đầu sáng, vệt đuôi lao chéo rồi tắt dần; trăng khuyết, núi xa, gò cỏ nhiều lớp và 56 ngọn cỏ đung đưa nhẹ (biên độ khoảng 1–1,8°); bố cục dọc dùng ảnh nền WebP nhẹ.
-- [x] **Bó hoa tulip nâng cấp:** 10 bông xuất hiện lần lượt, bay từ đồng cỏ vào vị trí, nhún nhẹ khi ghép thành bó có lá, giấy gói và nơ, rồi chuyển mượt sang minh họa WebP trong suốt 768×1152; sau đó mới hiện nút mở thư.
+- [x] **Album ảnh người dùng ở cuối thiệp:** chỉ ảnh thật đã tải lên, không chèn placeholder; mỗi lượt hiện một ảnh vừa khung, có chú thích/ghi chú, vuốt hoặc chạm nút trước/sau, số thứ tự và tiến độ; chuyển chậm, không trôi/chồng ảnh. Trong trình sửa, nút **+** trên từng mục chọn ảnh mới để chèn ngay sau mục đó; vẫn có thể đổi thứ tự, thay hoặc xóa ảnh.
+- [x] **Cảnh nền theo ảnh tham chiếu:** trời đêm cobalt/navy có 86 sao và 12 sao băng lệch pha, đầu sáng với đuôi chéo di chuyển; vệt kế tiếp bắt đầu trước khi vệt trước tắt để duy trì luồng bay liên tục; trăng khuyết, núi xa, đồng cỏ nhiều lớp và 56 ngọn cỏ đung đưa nhẹ.
+- [x] **Bó hoa tulip nâng cấp:** giữ nguyên minh họa WebP trong suốt 768×1152 và vị trí giữa khung; nâng hiệu ứng bằng nở mờ→rõ, glow dịu và nhún tỉ lệ rất nhẹ rồi ổn định; không dịch cả bó hoa lên/xuống.
 - [x] **Preview Zalo/Facebook:** metadata Open Graph/Twitter nằm trong HTML tĩnh; ảnh JPG công khai 1200×630; README trỏ tới hướng dẫn gửi/cache; ghi rõ preview chung do từng thiệp lưu cấu hình trong fragment.
 - [ ] **Ảnh và nhạc thật:** chờ người dùng đặt ảnh cá nhân và file nhạc vào `assets/`; phần mềm có placeholder rõ ràng khi chưa có file.

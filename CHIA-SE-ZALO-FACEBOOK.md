@@ -3,9 +3,10 @@
 ## Gửi bằng điện thoại
 
 1. Mở thiệp, chạm dấu **✦**, chỉnh tên, lời chúc, ảnh và nhạc. Chạm **Lưu và tạo link riêng** để cập nhật nội dung; màn hình hiện **link gốc** và **link người nhận** riêng biệt.
-2. Giữ **link gốc** để chỉnh sửa trên thiết bị/trình duyệt đã lưu nội dung. Chỉ chia sẻ **link người nhận**: chạm **Gửi link người nhận** để mở bảng chia sẻ của điện thoại, hoặc **Sao chép link người nhận** rồi dán vào cuộc trò chuyện Zalo/Messenger.
+2. Giữ **link gốc** để chỉnh sửa trên thiết bị/trình duyệt đã lưu nội dung. Chỉ chia sẻ **link người nhận**: chạm **Gửi link người nhận** để mở bảng chia sẻ của điện thoại, hoặc **Sao chép link người nhận** rồi dán vào cuộc trò chuyện Zalo/Messenger. Nếu webview chặn clipboard, ô link sẽ được chọn sẵn; nhấn giữ ô đó và chọn **Sao chép**.
 3. Trên Facebook, dán link người nhận vào bài viết hoặc Messenger, đợi ảnh và tiêu đề hiện ra trước khi đăng/gửi. Gửi trong tin nhắn riêng nếu thiệp có nội dung chỉ dành cho người nhận.
 4. Người nhận chạm vào link để mở đúng thiệp cá nhân hóa. Nhạc thường bắt đầu sau khi họ chạm mở quà vì trình duyệt điện thoại chặn tự phát âm thanh.
+5. Nếu link mở ngay trong Messenger thì đó là **trình duyệt tích hợp**, không phải lỗi và không bắt buộc phải nhảy sang Chrome/Safari. Ở album cuối, người nhận vuốt ngang hoặc chạm mũi tên để xem từng ảnh; album chỉ hiện ảnh đã tải lên và không tự cho ảnh trôi chồng nhau. Nếu nhạc không phát, chạm nút **♫**; nếu webview chặn một thao tác, mở menu **⋯ → Mở bằng trình duyệt**.
 
 Link người nhận ẩn nút cài đặt để giao diện chỉ còn trải nghiệm xem thiệp. Đây là website tĩnh, nên chế độ này chỉ ẩn giao diện chỉnh sửa, không phải bảo vệ nội dung bằng đăng nhập hay mật khẩu; người có link có thể chuyển tiếp link.
 

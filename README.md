@@ -1,6 +1,6 @@
 # Thiệp 20/10 — một món quà dành cho em
 
-Đây là website tĩnh mô phỏng sát phong cách ảnh tham khảo: nền xanh đêm navy/cobalt cố định, trăng khuyết, sao, sao băng, núi xa, đồng cỏ phát sáng, tulip hồng nở thành bó, lá thư tình, bó hoa tan dần và album ảnh bay từ dưới lên.
+Đây là website tĩnh mô phỏng phong cách ảnh tham khảo: nền xanh đêm navy/cobalt cố định, trăng khuyết, sao băng bay nối tiếp, đồng cỏ phát sáng và đúng ảnh bó tulip trong suốt nở sáng nhẹ tại chỗ; tiếp theo là lá thư, chuyển cảnh bó hoa và album ảnh người dùng tải lên để xem từng ảnh.
 
 ## Chạy thử
 
@@ -15,7 +15,8 @@ Sau đó mở `http://localhost:3000`.
 ## Mỗi người tạo thiệp và link riêng trên điện thoại
 Mở trang thiệp, chạm `✦` để sửa tên, lời chúc, thư, ảnh nền, nhạc và album. Sau khi bấm **Lưu và tạo link riêng**, bạn nhận hai URL: **link gốc** để tiếp tục chỉnh sửa trên thiết bị này và **link người nhận** chứa nội dung đã lưu. Chỉ gửi link người nhận bằng Zalo, Messenger hoặc ứng dụng khác; nó mở ở chế độ xem và ẩn nút cài đặt. Mỗi lần lưu tạo mã người nhận mới; ảnh được nén trên điện thoại.
 
-Ảnh vừa chọn sẽ hiện ngay trong danh sách để kiểm tra trước khi lưu. Mỗi ảnh có ô sửa chú thích/ghi chú, chọn **Vừa khung · không cắt** hoặc **Phủ khung · có thể cắt**, canh **giữa/trên/dưới/trái/phải**, nút **↑/↓** đổi thứ tự, **Đổi** thay ảnh và **×** xóa. Mặc định ảnh mới là **vừa khung, không cắt**. Ảnh nền và nhạc có thể thay hoặc gỡ; khi có thay đổi chưa lưu, link người nhận cũ bị khóa để tránh gửi nhầm.
+Ảnh vừa chọn sẽ hiện ngay trong danh sách để kiểm tra trước khi lưu. Mỗi ảnh có ô sửa chú thích/ghi chú, chọn **Vừa khung · không cắt** hoặc **Phủ khung · có thể cắt**, canh **giữa/trên/dưới/trái/phải**, nút **+** chèn ảnh ngay sau đúng mục, **↑/↓** đổi thứ tự, **Đổi** thay ảnh và **×** xóa. Mặc định ảnh mới là **vừa khung, không cắt**. Ảnh nền và nhạc có thể thay hoặc gỡ; khi có thay đổi chưa lưu, link người nhận cũ bị khóa để tránh gửi nhầm.
+Album cuối chỉ hiển thị ảnh thật bạn đã tải lên, không lẫn ảnh mẫu. Mỗi lượt hiện đúng một ảnh trong khung; người nhận có thể vuốt ngang hoặc chạm mũi tên **Ảnh trước/Ảnh tiếp theo**, có số thứ tự và thanh tiến độ; không tự bay, trôi hoặc chồng ảnh. Mở trong Messenger là bình thường; chạm **♫** nếu nhạc chưa phát. Nếu webview không tự chép link, ô link đã được chọn sẵn: nhấn giữ rồi chọn **Sao chép**, hoặc dùng **Gửi link** để mở bảng chia sẻ.
 
 Đây là website tĩnh: nội dung cá nhân hóa nằm trong fragment của link, không lưu trên máy chủ. Link gốc tải bản chỉnh sửa cục bộ trên trình duyệt bạn đã lưu; thiết bị khác có thể chỉ thấy nội dung mặc định. Chế độ người nhận **chỉ ẩn giao diện cài đặt, không phải kiểm soát truy cập/bảo mật** — người có link có thể chuyển tiếp link hoặc đọc dữ liệu trong URL. Không nhúng thông tin nhạy cảm. Với ảnh/nhạc lớn, link có thể dài; giảm dung lượng hoặc đặt file trong `assets/`.
 

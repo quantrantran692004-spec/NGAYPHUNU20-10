@@ -670,3 +670,101 @@ button { cursor: pointer; }
 @media (prefers-reduced-motion: reduce) {
   .memory-card:not(.is-placeholder)::after { animation: none; opacity: .65; }
 }
+
+
+/* Tinh chỉnh an toàn: ảnh hoa đứng nguyên vị trí; chỉ nở sáng rất nhẹ. */
+.scene--bloom.is-bouquet .bouquet-flowers { animation: none !important; }
+.scene--bloom.is-bouquet .bouquet-art { animation: bouquetSoftBloom 1.25s .08s cubic-bezier(.2,.75,.25,1) both !important; transform-origin: center bottom; }
+@keyframes bouquetSoftBloom {
+  0% { opacity: 0; transform: scale(.965); filter: blur(3px) saturate(.9); }
+  72% { opacity: 1; transform: scale(1.012); filter: blur(0) saturate(1.04); }
+  100% { opacity: 1; transform: scale(1); filter: blur(0) saturate(1.04); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene--bloom.is-bouquet .bouquet-art { animation: none !important; opacity: 1 !important; transform: none !important; filter: none !important; }
+}
+
+/* Vệt sao bay chéo với đầu sáng và đuôi tan; 12 vệt lệch pha 1,07 giây. */
+.shooting-star { width: 112px; height: 1.5px; transform-origin: 0 50%; background: linear-gradient(90deg, rgba(255,255,255,.98), rgba(218,247,255,.74) 18%, rgba(155,222,255,.32) 58%, transparent); box-shadow: 0 0 5px rgba(221,248,255,.68); animation-name: meteorFlow; animation-timing-function: linear; animation-duration: 12.8s; }
+.shooting-star::before { left: -2px; right: auto; top: 50%; width: 4px; height: 4px; transform: translateY(-50%); background: #fff; box-shadow: 0 0 7px 2px #fff, 0 0 16px 5px rgba(140,221,255,.82); }
+.shooting-star::after { content: ""; position: absolute; left: -6px; top: 50%; width: 12px; height: 12px; border-radius: 50%; transform: translateY(-50%); background: radial-gradient(circle, rgba(255,255,255,.68), rgba(136,217,255,.24) 38%, transparent 72%); }
+.shooting-star--one { animation-delay: 0s; }
+.shooting-star--two { animation-delay: 1.07s; }
+.shooting-star--three { animation-delay: 2.14s; }
+.shooting-star--four { animation-delay: 3.21s; }
+.shooting-star--five { animation-delay: 4.28s; }
+.shooting-star--six { animation-delay: 5.35s; }
+.shooting-star--seven { animation-delay: 6.42s; }
+.shooting-star--eight { animation-delay: 7.49s; }
+.shooting-star--nine { animation-delay: 8.56s; }
+.shooting-star--ten { animation-delay: 9.63s; }
+.shooting-star--eleven { animation-delay: 10.7s; }
+.shooting-star--twelve { animation-delay: 11.77s; }
+@keyframes meteorFlow {
+  0%, 4% { opacity: 0; transform: var(--meteor-start,translate3d(72px,-54px,0)) rotate(var(--meteor-angle,-31deg)) scale(var(--meteor-scale,.7)); filter: blur(.7px); }
+  6% { opacity: .55; }
+  8% { opacity: 1; transform: var(--meteor-pass,translate3d(0,0,0)) rotate(var(--meteor-angle,-31deg)) scale(var(--meteor-scale,.7)); filter: blur(0); }
+  16% { opacity: .86; transform: var(--meteor-mid,translate3d(-66px,48px,0)) rotate(var(--meteor-angle,-31deg)) scale(var(--meteor-scale,.7)); }
+  21% { opacity: .32; transform: var(--meteor-end,translate3d(-150px,110px,0)) rotate(var(--meteor-angle,-31deg)) scale(var(--meteor-scale,.7)); }
+  23% { opacity: 0; transform: var(--meteor-end,translate3d(-150px,110px,0)) rotate(var(--meteor-angle,-31deg)) scale(var(--meteor-scale,.7)); filter: blur(1px); }
+  100% { opacity: 0; transform: var(--meteor-end,translate3d(-150px,110px,0)) rotate(var(--meteor-angle,-31deg)) scale(var(--meteor-scale,.7)); }
+}
+@media (prefers-reduced-motion: reduce) { .shooting-star { animation: none !important; opacity: 0 !important; } }
+
+/* Album ảnh thật: một khung ảnh tại một thời điểm, có nút điều hướng và vuốt ngang. */
+.scene--gallery .gallery-track { inset: 25% 0 17%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; overflow: visible; }
+.scene--gallery .memory-card { position: relative; inset: auto; flex: 0 1 auto; width: min(78vw, 320px); max-height: 100%; padding: 6px 6px 10px; transform: none; animation: galleryCardIn .48s cubic-bezier(.2,.8,.25,1) both; }
+.scene--gallery .memory-card img { width: 100%; height: min(38svh, 320px); max-height: 38svh; object-fit: var(--photo-fit, contain); object-position: var(--photo-position, center); border-radius: 3px; }
+.scene--gallery .memory-card figcaption { margin: 8px 4px 0; font-size: 12px; line-height: 1.3; }
+.scene--gallery .memory-card figcaption span { margin-top: 3px; font-size: 10px; }
+@keyframes galleryCardIn { from { opacity: 0; transform: translateY(8px) scale(.985); } to { opacity: 1; transform: none; } }
+.scene--gallery .gallery-pager { position: relative; z-index: 5; display: flex; flex: 0 0 auto; align-items: center; justify-content: center; gap: 14px; width: min(78vw, 320px); min-height: 48px; }
+.scene--gallery .gallery-nav { display: grid; place-items: center; flex: 0 0 48px; width: 48px; height: 48px; border: 1px solid rgba(219,247,255,.56); border-radius: 50%; color: #effcff; background: rgba(12,62,155,.55); box-shadow: 0 0 12px rgba(118,219,255,.2); font-size: 30px; line-height: 1; touch-action: manipulation; }
+.scene--gallery .gallery-nav:disabled { opacity: .35; }
+.scene--gallery .gallery-progress { display: grid; flex: 1; gap: 7px; color: rgba(239,250,255,.9); font-size: 11px; font-weight: 800; }
+.scene--gallery .gallery-progress__track { height: 4px; overflow: hidden; border-radius: 99px; background: rgba(227,247,255,.24); }
+.scene--gallery .gallery-progress__track span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg,#a4e8ff,#ffd3e5); box-shadow: 0 0 8px rgba(173,233,255,.75); transition: width .3s ease; }
+.scene--gallery .gallery-empty { width: min(82vw,320px); padding: 24px 18px; border: 1px solid rgba(216,245,255,.34); border-radius: 18px; color: rgba(245,251,255,.95); background: rgba(10,42,112,.45); box-shadow: 0 8px 28px rgba(3,16,65,.24); font: 600 18px/1.45 Caveat,cursive; }
+.scene--gallery .gallery-empty > span { display: block; margin-bottom: 9px; color: #ffe0ef; font-size: 24px; }
+.scene--gallery .gallery-empty p { margin: 0; }
+.scene--gallery .gallery-bottom-actions { gap: 9px; }
+.scene--gallery .gallery-bottom-actions .ghost-button { min-height: 44px; padding: 0 12px; touch-action: manipulation; }
+@media (max-height: 700px) {
+  .scene--gallery .gallery-track { top: 24%; bottom: 18%; gap: 8px; }
+  .scene--gallery .memory-card img { height: min(34svh, 250px); max-height: 34svh; }
+  .scene--gallery .gallery-intro { top: 8%; }
+  .scene--gallery .gallery-intro h2 { font-size: clamp(24px, 7vw, 31px); }
+}
+@media (max-height: 480px) {
+  .scene--gallery .gallery-track { top: 23%; bottom: 20%; gap: 6px; }
+  .scene--gallery .memory-card { width: min(61vw, 285px); padding: 4px 4px 6px; }
+  .scene--gallery .memory-card img { height: min(27svh, 120px); max-height: 27svh; }
+  .scene--gallery .memory-card figcaption { margin-top: 4px; font-size: 10px; }
+  .scene--gallery .memory-card figcaption span { margin-top: 1px; font-size: 8px; }
+  .scene--gallery .gallery-pager { min-height: 42px; }
+  .scene--gallery .gallery-nav { flex-basis: 40px; width: 40px; height: 40px; }
+  .scene--gallery .gallery-bottom-actions .ghost-button { min-height: 38px; font-size: 10px; }
+}
+@media (max-height: 700px) { .app-shell { height: 100dvh; min-height: 100dvh; margin-top: 0; border-radius: 0; } }
+
+/* Lớp bó hoa chuyển cảnh chỉ để trang trí, không được chặn nút tiếp tục. */
+.scene--fade .fade-bouquet, .scene--fade .fade-bouquet * { pointer-events: none !important; }
+.scene--fade .fade-actions { z-index: 12; pointer-events: none; }
+.scene--fade .fade-actions button { position: relative; z-index: 13; pointer-events: auto; }
+
+/* Nút + mở bộ chọn ảnh và chèn ngay sau đúng mục trong danh sách album. */
+.photo-add-after { position: relative; overflow: hidden; display: inline-grid; place-items: center; min-width: 46px; min-height: 48px; margin: 0; padding: 0 10px; border: 1px solid rgba(64,143,122,.35); border-radius: 11px; color: #1d7a69; background: #edfff9; font-size: 24px; font-weight: 700; line-height: 1; cursor: pointer; }
+.photo-add-after input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+
+
+/* Share fallback overlay: always exposes the URL when an in-app browser blocks clipboard/share APIs. */
+.share-fallback { position: fixed; z-index: 1000; inset: 0; display: grid; place-items: center; padding: max(20px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left)); background: rgba(3,12,48,.72); backdrop-filter: blur(8px); }
+.share-fallback[hidden] { display: none; }
+.share-fallback__card { position: relative; width: min(100%,360px); padding: 26px 20px 20px; border: 1px solid rgba(217,245,255,.7); border-radius: 22px; color: #283467; background: linear-gradient(155deg,#f7fcff,#fff0f7 72%,#ebf8ff); box-shadow: 0 20px 64px rgba(0,0,28,.48),0 0 24px rgba(151,225,255,.22); }
+.share-fallback__card .eyebrow { margin: 0 0 7px; color: #a14d78; font-size: 10px; letter-spacing: .14em; }
+.share-fallback__card h2 { margin: 0; color: #283467; font: 600 25px Fraunces,serif; }
+.share-fallback__close { position: absolute; top: 10px; right: 10px; color: #283467; border-color: rgba(40,52,103,.2); background: rgba(255,255,255,.75); }
+.share-fallback__hint { margin: 12px 0; color: #586483; font-size: 12px; line-height: 1.5; }
+.share-fallback__card textarea { display: block; width: 100%; min-height: 76px; resize: vertical; padding: 11px; border: 1px solid rgba(73,104,156,.32); border-radius: 10px; color: #26335f; background: white; font: 11px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace; user-select: all; -webkit-user-select: all; }
+.share-fallback__actions { display: grid; grid-template-columns: 1fr 92px; gap: 9px; margin-top: 12px; }
+.share-fallback__actions button { min-height: 46px; touch-action: manipulation; }
