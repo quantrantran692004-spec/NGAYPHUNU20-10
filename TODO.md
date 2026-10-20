@@ -11,4 +11,10 @@
 - [x] **Link cá nhân sau mỗi lần lưu:** từ link thiệp gốc, mỗi người chỉnh tên, lời chúc/thư, nhạc, ảnh nền và ảnh kỷ niệm; khi bấm lưu, ứng dụng tạo ngay một URL riêng kèm mã ngẫu nhiên, hiện nút gửi/sao chép trên điện thoại. URL riêng chứa bản cấu hình để người nhận mở được đúng nội dung; link của các lần lưu khác nhau không trùng nhau.
 - [x] **Tối ưu thao tác trên điện thoại:** bảng chỉnh thiệp cuộn độc lập, vùng bấm tối thiểu 48px, trường nhập 16px tránh tự phóng to trên iPhone, chọn nhiều ảnh và nén ảnh trước khi nhúng vào link.
 - [x] **Quản lý đầy đủ album/media:** ảnh mới xem trước ngay khi chọn; sửa chú thích và ghi chú, thay riêng từng ảnh, sắp xếp lên/xuống, xóa từng ảnh hoặc xóa hết; đổi/gỡ ảnh nền và nhạc; ngăn gửi link cũ khi có thay đổi chưa lưu.
+- [x] **Hai link tách biệt:** giữ link gốc để chỉnh sửa trên trình duyệt đã lưu; link người nhận mang cấu hình riêng, mở ở chế độ xem và ẩn nút cài đặt. Đây là ẩn giao diện, không phải bảo vệ truy cập.
+- [x] **Khung ảnh có thể chọn:** ảnh mới mặc định vừa khung không cắt; từng ảnh có thể chuyển sang phủ khung và canh giữa/trên/dưới/trái/phải, các lựa chọn theo cùng cấu hình vào link người nhận.
+- [x] **Viền ảnh phát sáng:** ảnh thật trong album có viền trắng-xanh và quầng sáng nhịp nhẹ.
+- [x] **Cảnh nền theo ảnh tham chiếu:** trời đêm cobalt/navy có 86 sao, 12 sao băng thưa với đầu sáng, vệt đuôi lao chéo rồi tắt dần; trăng khuyết, núi xa, gò cỏ nhiều lớp và 56 ngọn cỏ đung đưa nhẹ (biên độ khoảng 1–1,8°); bố cục dọc dùng ảnh nền WebP nhẹ.
+- [x] **Bó hoa tulip nâng cấp:** 10 bông xuất hiện lần lượt, bay từ đồng cỏ vào vị trí, nhún nhẹ khi ghép thành bó có lá, giấy gói và nơ, rồi chuyển mượt sang minh họa WebP trong suốt 768×1152; sau đó mới hiện nút mở thư.
+- [x] **Preview Zalo/Facebook:** metadata Open Graph/Twitter nằm trong HTML tĩnh; ảnh JPG công khai 1200×630; README trỏ tới hướng dẫn gửi/cache; ghi rõ preview chung do từng thiệp lưu cấu hình trong fragment.
 - [ ] **Ảnh và nhạc thật:** chờ người dùng đặt ảnh cá nhân và file nhạc vào `assets/`; phần mềm có placeholder rõ ràng khi chưa có file.

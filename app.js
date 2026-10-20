@@ -9,6 +9,8 @@
     config: loadConfig(),
     shareId: window.location.hash.match(/(?:^#|&)sid=([^&]+)/)?.[1] || '',
     shareUrl: '',
+    ownerUrl: '',
+    recipientView: false,
     photoProcessing: Promise.resolve(),
     isDirty: false,
     photos: [],
@@ -47,6 +49,10 @@
     }
   }
 
+  function isRecipientViewRequested() {
+    return new URLSearchParams(window.location.hash.slice(1)).get('view') === 'recipient';
+  }
+
   function createShareId() {
     return window.crypto?.randomUUID?.() || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
   }
@@ -65,7 +71,7 @@
   }
 
   function persistConfig() {
-    const serializable = { ...state.config, photos: state.config.photos.map(({ src, caption, note }) => ({ src, caption, note })) };
+    const serializable = { ...state.config, photos: state.config.photos.map(({ src, caption, note, fit, position }) => ({ src, caption, note, fit, position })) };
     try { localStorage.setItem(storageKey, JSON.stringify(serializable)); } catch (error) { console.warn('localStorage đầy:', error); }
   }
 
@@ -89,11 +95,20 @@
 
   function createStars() {
     const stars = $('#stars');
-    const seed = [4, 9, 15, 21, 28, 34, 41, 47, 55, 62, 69, 76, 82, 89, 95, 12, 58, 73, 37, 66, 25, 84, 45, 18, 92, 52, 31, 7, 79, 49];
-    stars.innerHTML = seed.map((left, index) => {
-      const top = 5 + ((index * 17) % 54);
-      const size = index % 6 === 0 ? 3 : index % 3 === 0 ? 2.5 : 1.6;
-      return `<span class="star" style="left:${left}%;top:${top}%;--size:${size}px;--delay:${(index % 7) * .38}s;--twinkle:${2 + (index % 4) * .6}s;--opacity:${.4 + (index % 5) * .1}"></span>`;
+    stars.innerHTML = Array.from({ length: 86 }, (_, index) => {
+      const left = 3 + ((index * 37.73) % 94);
+      const top = 3 + ((index * 23 + (index % 7) * 5) % 64);
+      const size = index % 13 === 0 ? 3 : index % 4 === 0 ? 2 : 1;
+      return `<span class="star" style="left:${left.toFixed(2)}%;top:${top}%;--size:${size}px;--delay:${(index % 11) * .23}s;--twinkle:${1.8 + (index % 5) * .55}s;--opacity:${.34 + (index % 6) * .1}"></span>`;
+    }).join('');
+  }
+
+  function createWindGrass() {
+    $('#windGrass').innerHTML = Array.from({ length: 56 }, (_, index) => {
+      const left = ((index * 47.7) % 104) - 2;
+      const height = 24 + (index * 19 % 74);
+      const width = index % 5 === 0 ? 3 : index % 3 === 0 ? 2 : 1;
+      return `<span style="left:${left.toFixed(1)}%;height:${height}px;width:${width}px;--lean:${-2 + index % 5}deg;--sway:${1 + (index % 3) * .4}deg;--duration:${5.8 + (index % 8) * .45}s;--delay:${-((index % 13) * .31)}s;--green:${119 + index % 55}"></span>`;
     }).join('');
   }
 
@@ -101,20 +116,29 @@
     $('#petals').innerHTML = Array.from({ length: 9 }, (_, index) => `<span class="petal" style="left:${8 + index * 11}%;--delay:${index * -1.7}s;--duration:${7 + index % 4}s;--drift:${index % 2 ? -45 : 45}px"></span>`).join('');
   }
 
-  function flowerMarkup() {
-    return '<div class="tulip"><i></i><i></i><i></i><i></i><i></i></div>';
-  }
-
-  function bouquetMarkup(className = 'bouquet-flowers') {
-    const positions = [
-      [-112, 84, .7, -24, -9], [-82, 123, .82, -17, -6], [-52, 157, .9, -11, -3], [-18, 178, 1, -5, -1], [18, 180, 1, 4, 2], [54, 157, .9, 11, 4], [84, 123, .82, 18, 7], [112, 84, .7, 25, 10], [-70, 73, .73, -18, -6], [-35, 111, .88, -8, -2], [4, 132, .96, 1, 0], [43, 111, .88, 9, 3], [72, 72, .72, 18, 7], [0, 204, .72, 0, 0]
+  function bouquetMarkup(alt = '', withArrivals = true) {
+    const layout = [
+      { x: 0, y: 35, s: .78, r: 0, stem: -4, delay: .08, flyX: 0, flyY: 150 },
+      { x: -23, y: 34, s: .68, r: -17, stem: -22, delay: .31, flyX: -120, flyY: 150 },
+      { x: 23, y: 34, s: .68, r: 17, stem: 22, delay: .54, flyX: 120, flyY: 150 },
+      { x: -36, y: 49, s: .62, r: -24, stem: -30, delay: .77, flyX: -165, flyY: 105 },
+      { x: -11, y: 50, s: .70, r: -10, stem: -12, delay: 1.00, flyX: -65, flyY: 125 },
+      { x: 11, y: 50, s: .70, r: 10, stem: 12, delay: 1.23, flyX: 65, flyY: 125 },
+      { x: 36, y: 49, s: .62, r: 24, stem: 30, delay: 1.46, flyX: 165, flyY: 105 },
+      { x: -22, y: 64, s: .62, r: -16, stem: -20, delay: 1.69, flyX: -112, flyY: 78 },
+      { x: 22, y: 64, s: .62, r: 16, stem: 20, delay: 1.92, flyX: 112, flyY: 78 },
+      { x: 0, y: 75, s: .70, r: 0, stem: 0, delay: 2.15, flyX: 0, flyY: 86 }
     ];
-    return positions.map(([x, y, s, r, stemR], index) => `<div class="bouquet-flower" style="--x:${x}px;--y:${y}px;--s:${s};--r:${r}deg;--stem-r:${stemR}deg;--delay:${index * .18 + .1}s">${flowerMarkup()}</div>`).join('');
+    const tulipPetals = '<i></i>'.repeat(5);
+    const arrivals = withArrivals
+      ? `<div class="bouquet-arrivals" aria-hidden="true">${layout.map((flower, index) => `<div class="bouquet-flower" style="--x:${flower.x}%;--y:${flower.y}%;--s:${flower.s};--r:${flower.r}deg;--stem-r:${flower.stem}deg;--delay:${flower.delay}s;--fly-x:${flower.flyX}px;--fly-y:${flower.flyY}px;--depth:${10 - index}"><span class="bouquet-leaf bouquet-leaf--left"></span><span class="bouquet-leaf bouquet-leaf--right"></span><div class="tulip">${tulipPetals}</div></div>`).join('')}<div class="bouquet-bow" aria-hidden="true"><span class="bouquet-bow__tail bouquet-bow__tail--left"></span><span class="bouquet-bow__tail bouquet-bow__tail--right"></span><span class="bouquet-bow__loop bouquet-bow__loop--left"></span><span class="bouquet-bow__loop bouquet-bow__loop--right"></span><span class="bouquet-bow__knot"></span></div></div>`
+      : '';
+    return `${arrivals}<img class="bouquet-art" src="./assets/tulip-bouquet-20-10.webp" alt="${escapeAttr(alt)}" decoding="async" />`;
   }
 
   function prepareBloom() {
-    $('#bouquetFlowers').innerHTML = bouquetMarkup();
-    $('#fadeBouquetFlowers').innerHTML = bouquetMarkup('fade-bouquet-flowers');
+    $('#bouquetFlowers').innerHTML = bouquetMarkup('Bó tulip hồng được gói giấy kem và thắt nơ hồng.');
+    $('#fadeBouquetFlowers').innerHTML = bouquetMarkup('', false);
     $('#bloomGreeting').textContent = state.config.greeting;
     $('#bloomTitle').innerHTML = `${escapeHtml(state.config.title).replace('20/10', '<em>20/10</em>')}`;
     $('#letterHeading').textContent = `Gửi ${state.config.recipient}, người anh yêu`;
@@ -132,7 +156,7 @@
     clearTimeout(state.bloomTimer);
     state.bloomTimer = setTimeout(() => {
       bloom.classList.add('is-bouquet');
-      state.bloomTimer = setTimeout(() => { $('#bloomActions').hidden = false; }, 3200);
+      state.bloomTimer = setTimeout(() => { $('#bloomActions').hidden = false; }, 4500);
     }, 1700);
   }
 
@@ -168,6 +192,8 @@
       originalSrc: safeUrl(photo.src),
       caption: photo.caption || `Khoảnh khắc ${index + 1}`,
       note: photo.note || 'Ảnh của chúng mình',
+      fit: photo.fit === 'cover' ? 'cover' : 'contain',
+      position: ['center', 'top', 'bottom', 'left', 'right'].includes(photo.position) ? photo.position : 'center',
       placeholder: !photo.src
     }));
   }
@@ -183,7 +209,8 @@
       const duration = 8.5 + (index % 5) * .55;
       const delay = -(index * 1.65);
       const drift = index % 2 ? '-22px' : '18px';
-      return `<figure class="memory-card ${photo.placeholder ? 'is-placeholder' : ''}" style="--left:${left}%;--width:${width}px;--height:${height}px;--rotate:${rotate}deg;--duration:${duration}s;--delay:${delay}s;--drift:${drift};--photo-a:${index % 2 ? '#4c68ad' : '#db7ca5'};--photo-b:${index % 2 ? '#59bee4' : '#f4c3d5'}"><img loading="lazy" decoding="async" src="${escapeAttr(photo.src)}" alt="${escapeAttr(photo.caption)}" /><figcaption>${escapeHtml(photo.caption)}<span>${escapeHtml(photo.note)}</span></figcaption></figure>`;
+      const fit = photo.placeholder ? 'contain' : photo.fit;
+      return `<figure class="memory-card ${photo.placeholder ? 'is-placeholder' : ''}" style="--left:${left}%;--width:${width}px;--height:${height}px;--rotate:${rotate}deg;--duration:${duration}s;--delay:${delay}s;--drift:${drift};--photo-fit:${fit};--photo-position:${photo.position};--photo-a:${index % 2 ? '#4c68ad' : '#db7ca5'};--photo-b:${index % 2 ? '#59bee4' : '#f4c3d5'}"><img loading="lazy" decoding="async" src="${escapeAttr(photo.src)}" alt="${escapeAttr(photo.caption)}" /><figcaption>${escapeHtml(photo.caption)}<span>${escapeHtml(photo.note)}</span></figcaption></figure>`;
     }).join('');
     track.querySelectorAll('img').forEach((image, index) => image.addEventListener('error', () => {
       image.src = placeholderData(index);
@@ -218,8 +245,19 @@
     }
   }
 
-  function openSettings() { $('#settingsPanel').classList.add('is-open'); $('#settingsPanel').setAttribute('aria-hidden', 'false'); $('#settingsScrim').hidden = false; }
+  function openSettings() { if (state.recipientView) return; $('#settingsPanel').classList.add('is-open'); $('#settingsPanel').setAttribute('aria-hidden', 'false'); $('#settingsScrim').hidden = false; }
   function closeSettings() { $('#settingsPanel').classList.remove('is-open'); $('#settingsPanel').setAttribute('aria-hidden', 'true'); $('#settingsScrim').hidden = true; }
+
+  function applyRecipientView() {
+    state.recipientView = isRecipientViewRequested();
+    $('#settingsToggle').hidden = state.recipientView;
+    $('.gallery-hint').hidden = state.recipientView;
+    document.body.classList.toggle('is-recipient-view', state.recipientView);
+    if (state.recipientView) {
+      closeSettings();
+      $('#shareResult').hidden = true;
+    }
+  }
 
   function fillForm() {
     $('#recipientInput').value = state.config.recipient || '';
@@ -238,9 +276,29 @@
       list.innerHTML = '<p class="photo-list__empty">Chưa có ảnh trong album. Chọn ảnh ở mục bên trên để thêm.</p>';
       return;
     }
-    list.innerHTML = `<div class="photo-list__heading"><strong>Ảnh trong album · ${photos.length}</strong><button id="clearPhotos" class="photo-clear-all" type="button">Xóa tất cả</button></div>` + photos.map((photo, index) => `<article class="photo-list__item"><img src="${escapeAttr(photo.src || placeholderData(index))}" alt="Xem trước ${index + 1}" /><div class="photo-list__fields"><label class="photo-edit-field">Chú thích<input type="text" data-photo-caption="${index}" value="${escapeAttr(photo.caption || `Ảnh ${index + 1}`)}" aria-label="Chú thích ảnh ${index + 1}" /></label><label class="photo-edit-field">Ghi chú<input type="text" data-photo-note="${index}" value="${escapeAttr(photo.note || '')}" aria-label="Ghi chú ảnh ${index + 1}" /></label></div><div class="photo-list__controls"><button type="button" data-move-photo="up:${index}" aria-label="Đưa ảnh ${index + 1} lên trước" ${index === 0 ? 'disabled' : ''}>↑</button><button type="button" data-move-photo="down:${index}" aria-label="Đưa ảnh ${index + 1} xuống sau" ${index === photos.length - 1 ? 'disabled' : ''}>↓</button><label class="photo-replace" title="Thay ảnh">Đổi<input type="file" data-replace-photo="${index}" accept="image/*" aria-label="Thay ảnh ${index + 1}" /></label><button type="button" data-remove-photo="${index}" aria-label="Xóa ảnh ${index + 1}">×</button></div></article>`).join('');
+    list.innerHTML = `<div class="photo-list__heading"><strong>Ảnh trong album · ${photos.length}</strong><button id="clearPhotos" class="photo-clear-all" type="button">Xóa tất cả</button></div>` + photos.map((photo, index) => {
+      const fit = photo.fit === 'cover' ? 'cover' : 'contain';
+      const position = ['center', 'top', 'bottom', 'left', 'right'].includes(photo.position) ? photo.position : 'center';
+      const positions = [['center', 'Giữa'], ['top', 'Trên'], ['bottom', 'Dưới'], ['left', 'Trái'], ['right', 'Phải']];
+      return `<article class="photo-list__item"><img data-photo-preview="${index}" src="${escapeAttr(photo.src || placeholderData(index))}" alt="Xem trước ${index + 1}" style="object-fit:${fit};object-position:${position}" /><div class="photo-list__fields"><label class="photo-edit-field">Chú thích<input type="text" data-photo-caption="${index}" value="${escapeAttr(photo.caption || `Ảnh ${index + 1}`)}" aria-label="Chú thích ảnh ${index + 1}" /></label><label class="photo-edit-field">Ghi chú<input type="text" data-photo-note="${index}" value="${escapeAttr(photo.note || '')}" aria-label="Ghi chú ảnh ${index + 1}" /></label><div class="photo-list__view"><label class="photo-edit-field">Cách hiển thị<select data-photo-fit="${index}" aria-label="Cách hiển thị ảnh ${index + 1}"><option value="contain" ${fit === 'contain' ? 'selected' : ''}>Vừa khung · không cắt</option><option value="cover" ${fit === 'cover' ? 'selected' : ''}>Phủ khung · có thể cắt</option></select></label><label class="photo-edit-field">Canh ảnh<select data-photo-position="${index}" aria-label="Canh ảnh ${index + 1}">${positions.map(([value, label]) => `<option value="${value}" ${position === value ? 'selected' : ''}>${label}</option>`).join('')}</select></label></div></div><div class="photo-list__controls"><button type="button" data-move-photo="up:${index}" aria-label="Đưa ảnh ${index + 1} lên trước" ${index === 0 ? 'disabled' : ''}>↑</button><button type="button" data-move-photo="down:${index}" aria-label="Đưa ảnh ${index + 1} xuống sau" ${index === photos.length - 1 ? 'disabled' : ''}>↓</button><label class="photo-replace" title="Thay ảnh">Đổi<input type="file" data-replace-photo="${index}" accept="image/*" aria-label="Thay ảnh ${index + 1}" /></label><button type="button" data-remove-photo="${index}" aria-label="Xóa ảnh ${index + 1}">×</button></div></article>`;
+    }).join('');
     list.querySelectorAll('[data-photo-caption]').forEach((input) => input.addEventListener('input', () => { state.config.photos[Number(input.dataset.photoCaption)].caption = input.value; }));
     list.querySelectorAll('[data-photo-note]').forEach((input) => input.addEventListener('input', () => { state.config.photos[Number(input.dataset.photoNote)].note = input.value; }));
+    list.querySelectorAll('[data-photo-fit]').forEach((select) => select.addEventListener('change', () => {
+      const index = Number(select.dataset.photoFit);
+      state.config.photos[index].fit = select.value === 'cover' ? 'cover' : 'contain';
+      const preview = list.querySelector(`[data-photo-preview="${index}"]`);
+      if (preview) preview.style.objectFit = state.config.photos[index].fit;
+      markShareDirty();
+    }));
+    list.querySelectorAll('[data-photo-position]').forEach((select) => select.addEventListener('change', () => {
+      const index = Number(select.dataset.photoPosition);
+      const position = ['center', 'top', 'bottom', 'left', 'right'].includes(select.value) ? select.value : 'center';
+      state.config.photos[index].position = position;
+      const preview = list.querySelector(`[data-photo-preview="${index}"]`);
+      if (preview) preview.style.objectPosition = position;
+      markShareDirty();
+    }));
     list.querySelectorAll('[data-remove-photo]').forEach((button) => button.addEventListener('click', () => {
       state.config.photos.splice(Number(button.dataset.removePhoto), 1);
       markShareDirty();
@@ -311,7 +369,7 @@
       const added = [];
       for (const [index, file] of validFiles.entries()) {
         const src = await compressImage(file, 1280);
-        added.push({ src, caption: file.name.replace(/\.[^.]+$/, '') || `Ảnh ${state.config.photos.length + index + 1}`, note: 'Ảnh của chúng mình' });
+        added.push({ src, caption: file.name.replace(/\.[^.]+$/, '') || `Ảnh ${state.config.photos.length + index + 1}`, note: 'Ảnh của chúng mình', fit: 'contain', position: 'center' });
       }
       state.config.photos = [...(state.config.photos || []), ...added];
       renderPhotoList();
@@ -334,25 +392,32 @@
   function createShareLink(makeNewId = false) {
     if (makeNewId || !state.shareId) state.shareId = createShareId();
     state.isDirty = false;
-    state.shareUrl = `${window.location.origin}${window.location.pathname}${window.location.search}#gift=${encodeSharedConfig(state.config)}&sid=${encodeURIComponent(state.shareId)}`;
-    window.history.replaceState(null, '', state.shareUrl);
+    state.ownerUrl = `${window.location.origin}${window.location.pathname}`;
+    state.shareUrl = `${state.ownerUrl}#gift=${encodeSharedConfig(state.config)}&sid=${encodeURIComponent(state.shareId)}&view=recipient`;
     $('#shareResult').hidden = false;
+    $('#ownerLinkOutput').value = state.ownerUrl;
     $('#shareLinkOutput').value = state.shareUrl;
     $('#shareLinkNote').textContent = state.shareUrl.length > 1800000
       ? 'Link quá dài để gửi thuận tiện. Hãy dùng ảnh nhỏ hơn hoặc đặt ảnh/nhạc trong assets/ rồi tạo link mới.'
-      : 'Link chứa nội dung thiệp riêng của bạn. Gửi link này để người nhận mở đúng phiên bản đã lưu.';
+      : 'Giữ link gốc để chỉnh sửa. Chỉ gửi link người nhận bên dưới — link này mở đúng thiệp đã lưu và ẩn phần cài đặt.';
+    $('#copyOwnerLink').disabled = false;
     $('#copyShareLink').disabled = false;
     $('#sendShareLink').disabled = false;
     return state.shareUrl;
   }
 
-  async function copyText(text) {
+  async function copyText(text, fallbackSelector = '#shareLinkOutput') {
     try {
       if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(text); return true; }
     } catch (error) { console.warn('Không dùng được clipboard API:', error); }
-    const input = $('#shareLinkOutput');
+    const input = $(fallbackSelector);
     input.focus(); input.select(); input.setSelectionRange(0, input.value.length);
     try { return document.execCommand('copy'); } catch (error) { return false; }
+  }
+
+  async function copyOwnerLink() {
+    const copied = await copyText($('#ownerLinkOutput').value, '#ownerLinkOutput');
+    showToast(copied ? 'Đã sao chép link gốc để chỉnh sửa.' : 'Hãy nhấn giữ link gốc để sao chép.');
   }
 
   async function copyPersonalLink() {
@@ -432,7 +497,7 @@
     if (state.isDirty) { showToast('Có thay đổi chưa lưu. Hãy lưu để tạo link mới trước khi chia sẻ.'); openSettings(); return; }
     const url = createShareLink();
     if (url.length > 1800000) showToast('Link rất dài vì có ảnh/nhạc nhúng; nên đặt file vào assets/ để link nhẹ hơn.');
-    const shareData = { title: 'Một món quà 20/10', text: `Một món quà dành cho ${state.config.recipient}`, url };
+    const shareData = { title: 'Thiệp 20/10 — Bó hoa dưới trời sao', text: `Một món quà dành cho ${state.config.recipient}`, url };
     try {
       if (navigator.share) { await navigator.share(shareData); showToast('Đã tạo link riêng cho người nhận.'); } else { await navigator.clipboard.writeText(url); showToast('Đã copy link riêng của thiệp.'); }
     } catch (error) { if (error.name !== 'AbortError') { await navigator.clipboard?.writeText(url); showToast('Đã copy link riêng của thiệp.'); } }
@@ -448,12 +513,13 @@
 
   function bindEvents() {
     window.addEventListener('hashchange', () => {
+      applyRecipientView();
       const shared = readSharedConfig();
       if (!shared) return;
       state.config = mergeConfig(defaults, shared);
       state.isDirty = false;
       state.shareId = window.location.hash.match(/(?:^#|&)sid=([^&]+)/)?.[1] || '';
-      state.shareUrl = `${window.location.origin}${window.location.pathname}${window.location.search}${window.location.hash}`;
+      state.shareUrl = `${window.location.origin}${window.location.pathname}${window.location.hash}`;
       fillForm();
       prepareBloom();
       setAudioSource(state.config.music || '');
@@ -494,6 +560,7 @@
     $('#exportButton').addEventListener('click', exportConfig);
     $('#restartButton').addEventListener('click', () => { clearTimeout(state.bloomTimer); clearTimeout(state.fadeTimer); setScreen('cover'); });
     $('#shareButton').addEventListener('click', shareCard);
+    $('#copyOwnerLink').addEventListener('click', copyOwnerLink);
     $('#copyShareLink').addEventListener('click', copyPersonalLink);
     $('#sendShareLink').addEventListener('click', sendPersonalLink);
     $('#photosInput').addEventListener('change', handlePhotoSelection);
@@ -509,6 +576,6 @@
     });
   }
 
-  createStars(); createPetals(); fillForm(); prepareBloom(); bindEvents();
+  createStars(); createWindGrass(); createPetals(); fillForm(); prepareBloom(); bindEvents(); applyRecipientView();
   setAudioSource(state.config.music || ''); applyBackground(state.config.background || '');
 })();

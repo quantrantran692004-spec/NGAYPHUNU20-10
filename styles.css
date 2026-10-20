@@ -427,3 +427,246 @@ button { cursor: pointer; }
 
 .photo-replace { font-size: 12px; font-weight: 800; }
 .share-result__actions button:disabled { opacity: .45; cursor: not-allowed; }
+
+
+/* Cảnh đêm sao băng + đồng cỏ gió, ảnh gốc tối ưu WebP cho mobile */
+.sky {
+  background-image:
+    linear-gradient(180deg, rgba(4,13,72,.08) 0%, rgba(5,28,102,.03) 56%, rgba(0,12,48,.2) 100%),
+    url("./assets/night-meadow-20-10.webp");
+  background-position: center, center;
+  background-size: cover, cover;
+}
+.sky .moon { display: none; }
+.sky::before { opacity: .42; }
+.meadow {
+  bottom: -8%;
+  height: 39%;
+  background:
+    radial-gradient(ellipse at 50% 13%, rgba(72,191,223,.2), transparent 48%),
+    linear-gradient(180deg, rgba(4,63,139,.02), rgba(3,31,86,.25) 53%, rgba(1,13,47,.72));
+}
+.meadow::before { opacity: .43; }
+.meadow::after { opacity: .28; }
+.star { box-shadow: 0 0 5px 1px rgba(223,250,255,.7); }
+.star:nth-child(9n)::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -5px;
+  width: 1px;
+  height: 11px;
+  background: linear-gradient(transparent, rgba(223,250,255,.72), transparent);
+}
+.shooting-star--six { top: 20%; left: 86%; animation-delay: 4.4s; animation-duration: 10.2s; transform: rotate(-34deg) scale(.54); }
+.shooting-star--seven { top: 54%; left: 71%; animation-delay: 2s; animation-duration: 11.2s; transform: rotate(-25deg) scale(.64); }
+.shooting-star--eight { top: 13%; left: 53%; animation-delay: 6.1s; animation-duration: 9.1s; transform: rotate(-39deg) scale(.46); }
+.shooting-star--nine { top: 39%; left: 46%; animation-delay: 8.4s; animation-duration: 12s; transform: rotate(-28deg) scale(.58); }
+.wind-grass {
+  position: absolute;
+  z-index: 7;
+  left: -3%;
+  right: -3%;
+  bottom: -1%;
+  height: 20%;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 28%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 28%);
+}
+.wind-grass span {
+  position: absolute;
+  bottom: -4px;
+  display: block;
+  border-radius: 100% 0 100% 0;
+  transform-origin: bottom center;
+  background: linear-gradient(0deg, rgba(3,35,54,.96), hsl(var(--green) 48% 37% / .88) 74%, rgba(197,255,226,.65));
+  box-shadow: 0 0 4px rgba(91,220,201,.22);
+  opacity: .8;
+  animation: grassWind var(--duration, 4s) ease-in-out var(--delay, 0s) infinite;
+  will-change: transform;
+}
+@keyframes grassWind {
+  0%, 100% { transform: rotate(calc(var(--lean) - var(--sway))); }
+  50% { transform: rotate(calc(var(--lean) + var(--sway))) translateY(-2px); }
+}
+.scene--bloom .bloom-copy { opacity: 1; }
+.scene--bloom .bloom-copy h2 { text-shadow: 0 0 22px rgba(125,225,255,.76), 0 2px 8px rgba(3,15,74,.52); }
+.bouquet-flowers {
+  left: 50%;
+  bottom: 11%;
+  width: min(88vw, 365px);
+  height: min(49svh, 420px);
+  display: grid;
+  place-items: center;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 12px 22px rgba(4,13,54,.36)) drop-shadow(0 0 15px rgba(255,173,221,.2));
+}
+.bouquet-paper--bloom, .fade-bouquet > .bouquet-paper { display: none; }
+.bouquet-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  opacity: 0;
+  transform: translateY(38px) scale(.76) rotate(-3deg);
+  transform-origin: center bottom;
+  filter: saturate(1.04);
+}
+.scene--bloom.is-bouquet .bouquet-art { animation: bouquetArtReveal 1.55s .08s var(--ease) both; }
+.scene--bloom.is-bouquet .bouquet-flowers { animation: bouquetSway 5.8s 1.8s ease-in-out infinite; }
+@keyframes bouquetArtReveal {
+  0% { opacity: 0; transform: translateY(38px) scale(.76) rotate(-3deg); filter: blur(7px) saturate(.8); }
+  68% { opacity: 1; transform: translateY(-4px) scale(1.035) rotate(1.2deg); filter: blur(0) saturate(1.04); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0); filter: blur(0) saturate(1.04); }
+}
+@keyframes bouquetSway {
+  0%, 100% { transform: translateX(-50%) rotate(-1deg) translateY(0); }
+  50% { transform: translateX(-50%) rotate(1deg) translateY(-3px); }
+}
+.scene--bloom .bloom-actions { bottom: max(14px, env(safe-area-inset-bottom)); }
+.fade-bouquet {
+  width: min(82vw, 350px);
+  height: min(55svh, 445px);
+  bottom: 10%;
+}
+.fade-bouquet-flowers { inset: 0; }
+.fade-bouquet-flowers .bouquet-art {
+  opacity: 1;
+  transform: none;
+  filter: drop-shadow(0 10px 20px rgba(4,13,54,.32));
+}
+@media (max-width: 360px) {
+  .bouquet-flowers { width: 86vw; height: min(46svh, 360px); }
+  .bloom-copy { left: 7%; right: 7%; }
+  .bloom-copy h2 { font-size: clamp(22px, 7vw, 30px); }
+}
+@media (max-height: 700px) {
+  .bouquet-flowers { height: 44svh; bottom: 12%; }
+  .scene--bloom .bloom-copy { top: 9%; }
+  .fade-bouquet { height: 48svh; bottom: 9%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wind-grass span { animation: none !important; }
+  .scene--bloom.is-bouquet .bouquet-flowers { animation: none !important; }
+}
+
+/* Khóa hộp ảnh trong khung responsive; tránh intrinsic ratio làm ảnh tràn lên lời chúc. */
+.bouquet-flowers { display: block; }
+.bouquet-art { position: absolute; inset: 0; width: 100%; height: 100%; min-width: 0; min-height: 0; }
+.fade-bouquet-flowers .bouquet-art { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+/* Gió dịu hơn và thêm vừa phải vài sao băng thưa, nhỏ. */
+@keyframes grassWind {
+  0%, 100% { transform: rotate(calc(var(--lean) - var(--sway))); }
+  50% { transform: rotate(calc(var(--lean) + var(--sway))) translateY(-1px); }
+}
+.shooting-star--ten { top: 29%; left: 21%; animation-delay: 3.2s; animation-duration: 13.4s; transform: rotate(-33deg) scale(.5); }
+.shooting-star--eleven { top: 46%; left: 91%; animation-delay: 7.1s; animation-duration: 14.2s; transform: rotate(-27deg) scale(.56); }
+.shooting-star--twelve { top: 8%; left: 35%; animation-delay: 10.3s; animation-duration: 12.8s; transform: rotate(-38deg) scale(.47); }
+
+/* Các bông tulip bay vào từng nhịp rồi tan mượt vào minh họa bó hoa hoàn chỉnh. */
+.bouquet-arrivals { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.bouquet-flower { z-index: var(--depth, 1); opacity: 0; animation: none; transform-origin: center bottom; }
+.bouquet-flower .tulip { z-index: 2; filter: drop-shadow(0 3px 5px rgba(4,16,54,.18)); }
+.bouquet-flower .tulip i { background: linear-gradient(135deg, #ffe1ec 4%, #f69abb 48%, #c94e8b 100%); }
+.bouquet-flower .tulip i:nth-child(3) { background: linear-gradient(145deg, #fff1f6, #f5a2c3 56%, #d35e98); }
+.bouquet-flower::after { top: 54px; height: 125px; z-index: 0; }
+.bouquet-leaf { position: absolute; z-index: 1; left: 50%; top: 83px; width: 58px; height: 23px; border-radius: 100% 0 100% 0; transform-origin: left center; background: linear-gradient(145deg, #9cdd91, #287b57 66%, #174e43); box-shadow: inset 2px 1px 3px rgba(234,255,211,.32); }
+.bouquet-leaf--left { transform: rotate(202deg) scale(var(--s)); }
+.bouquet-leaf--right { top: 108px; transform: rotate(-24deg) scale(var(--s)); }
+.scene--bloom.is-bouquet .bouquet-flower { animation: tulipArrival 1.12s var(--delay) cubic-bezier(.18,.78,.22,1.12) both; }
+@keyframes tulipArrival {
+  0% { opacity: 0; transform: translate3d(var(--fly-x),var(--fly-y),0) translateX(-50%) scale(.14) rotate(calc(var(--r) - 18deg)); filter: blur(8px); }
+  66% { opacity: 1; transform: translate3d(0,-12px,0) translateX(-50%) scale(1.12) rotate(calc(var(--r) + 4deg)); filter: blur(0); }
+  84% { opacity: 1; transform: translate3d(0,2px,0) translateX(-50%) scale(.98) rotate(calc(var(--r) - 1deg)); }
+  100% { opacity: 1; transform: translate3d(0,0,0) translateX(-50%) scale(1) rotate(var(--r)); }
+}
+.scene--bloom.is-bouquet .bouquet-arrivals { animation: arrivalsResolve .82s 3.28s ease forwards; }
+@keyframes arrivalsResolve { to { opacity: 0; } }
+.scene--bloom.is-bouquet .bouquet-paper--bloom { display: block; width: min(53vw,200px); height: min(21svh,176px); bottom: 5.5%; animation: paperSettle .7s .35s var(--ease) both; }
+@keyframes paperSettle { 0% { opacity: 0; transform: translateX(-50%) perspective(160px) rotateX(-8deg) translateY(22px) scale(.82); } 100% { opacity: 1; transform: translateX(-50%) perspective(160px) rotateX(-8deg) translateY(0) scale(1); } }
+.scene--bloom.is-bouquet .bouquet-paper--bloom { animation: paperFadeOut .72s 3.35s ease forwards; }
+@keyframes paperFadeOut { to { opacity: 0; } }
+.bouquet-bow { position: absolute; z-index: 6; left: 50%; bottom: 25%; width: 138px; height: 68px; opacity: 0; transform: translateX(-50%) scale(.25); filter: drop-shadow(0 3px 5px rgba(60,12,50,.24)); }
+.bouquet-bow__loop, .bouquet-bow__tail { position: absolute; display: block; background: linear-gradient(130deg, #ffd0e1, #f27fae 57%, #cf528b); border: 1px solid rgba(255,239,248,.55); }
+.bouquet-bow__loop { top: 5px; width: 53px; height: 35px; border-radius: 70% 32% 70% 25%; box-shadow: inset 4px 2px 7px rgba(255,255,255,.36); }
+.bouquet-bow__loop--left { left: 15px; transform: rotate(19deg); }
+.bouquet-bow__loop--right { right: 15px; transform: scaleX(-1) rotate(19deg); }
+.bouquet-bow__tail { top: 28px; width: 33px; height: 48px; clip-path: polygon(0 0,100% 0,82% 100%,43% 79%,0 100%); }
+.bouquet-bow__tail--left { left: 38px; transform: rotate(8deg); }
+.bouquet-bow__tail--right { right: 38px; transform: scaleX(-1) rotate(8deg); }
+.bouquet-bow__knot { position: absolute; z-index: 2; left: 56px; top: 18px; width: 27px; height: 28px; border: 1px solid rgba(255,239,248,.62); border-radius: 40% 40% 45% 45%; background: linear-gradient(110deg, #ffcade, #eb6d9f 58%, #c94c83); box-shadow: inset 3px 1px 4px rgba(255,255,255,.5); }
+.scene--bloom.is-bouquet .bouquet-bow { animation: bowTie .72s 2.55s cubic-bezier(.2,.9,.25,1.2) both; }
+@keyframes bowTie { 0% { opacity: 0; transform: translateX(-50%) translateY(24px) scale(.25) rotate(-9deg); } 72% { opacity: 1; transform: translateX(-50%) translateY(-3px) scale(1.08) rotate(2deg); } 100% { opacity: 1; transform: translateX(-50%) scale(1) rotate(0); } }
+.scene--bloom.is-bouquet .bouquet-art { z-index: 8; animation: bouquetArtReveal 1.05s 3.15s var(--ease) both; }
+@keyframes bouquetArtReveal {
+  0% { opacity: 0; transform: translateY(30px) scale(.88) rotate(-1deg); filter: blur(6px) saturate(.88); }
+  72% { opacity: 1; transform: translateY(-2px) scale(1.015) rotate(.3deg); filter: blur(0) saturate(1.04); }
+  100% { opacity: 1; transform: none; filter: blur(0) saturate(1.04); }
+}
+/* Sao băng có đầu sáng rõ, đuôi mảnh; lao nhanh theo đường chéo rồi tan dần. */
+.shooting-star { width: 112px; height: 1.5px; transform-origin: 0 50%; background: linear-gradient(90deg, rgba(255,255,255,.98), rgba(218,247,255,.74) 18%, rgba(155,222,255,.32) 58%, transparent); box-shadow: 0 0 5px rgba(221,248,255,.68); animation-name: shooting; animation-timing-function: cubic-bezier(.22,.68,.22,1); }
+.shooting-star::before { left: -2px; right: auto; top: 50%; width: 4px; height: 4px; transform: translateY(-50%); background: #fff; box-shadow: 0 0 7px 2px #fff, 0 0 16px 5px rgba(140,221,255,.82); }
+.shooting-star::after { content: ""; position: absolute; left: -6px; top: 50%; width: 12px; height: 12px; border-radius: 50%; transform: translateY(-50%); background: radial-gradient(circle, rgba(255,255,255,.68), rgba(136,217,255,.24) 38%, transparent 72%); }
+@keyframes shooting {
+  0%, 61% { opacity: 0; transform: var(--meteor-start,translate3d(78px,-56px,0)) rotate(var(--meteor-angle,-31deg)) scale(var(--meteor-scale,.7)); filter: blur(.7px); }
+  64% { opacity: .22; }
+  67% { opacity: 1; transform: var(--meteor-pass,translate3d(0,0,0)) rotate(var(--meteor-angle,-31deg)) scale(var(--meteor-scale,.7)); filter: blur(0); }
+  72% { opacity: .66; transform: var(--meteor-mid,translate3d(-66px,48px,0)) rotate(var(--meteor-angle,-31deg)) scale(var(--meteor-scale,.7)); }
+  77% { opacity: 0; transform: var(--meteor-end,translate3d(-150px,110px,0)) rotate(var(--meteor-angle,-31deg)) scale(var(--meteor-scale,.7)); filter: blur(1px); }
+  100% { opacity: 0; transform: var(--meteor-end,translate3d(-150px,110px,0)) rotate(var(--meteor-angle,-31deg)) scale(var(--meteor-scale,.7)); }
+}
+.shooting-star--one { --meteor-angle: -31deg; --meteor-scale: .9; --meteor-start: translate3d(72px,-54px,0); --meteor-mid: translate3d(-64px,46px,0); --meteor-end: translate3d(-142px,104px,0); }
+.shooting-star--two { --meteor-angle: -24deg; --meteor-scale: .68; --meteor-start: translate3d(70px,-42px,0); --meteor-mid: translate3d(-52px,37px,0); --meteor-end: translate3d(-128px,92px,0); }
+.shooting-star--three { --meteor-angle: -29deg; --meteor-scale: .72; --meteor-start: translate3d(86px,-60px,0); --meteor-mid: translate3d(-76px,52px,0); --meteor-end: translate3d(-158px,112px,0); }
+.shooting-star--four { --meteor-angle: -37deg; --meteor-scale: .78; --meteor-start: translate3d(66px,-58px,0); --meteor-mid: translate3d(-68px,55px,0); --meteor-end: translate3d(-145px,118px,0); }
+.shooting-star--five { --meteor-angle: -26deg; --meteor-scale: .6; --meteor-start: translate3d(80px,-48px,0); --meteor-mid: translate3d(-59px,42px,0); --meteor-end: translate3d(-139px,100px,0); }
+.shooting-star--six { --meteor-angle: -34deg; --meteor-scale: .65; --meteor-start: translate3d(74px,-56px,0); --meteor-mid: translate3d(-68px,51px,0); --meteor-end: translate3d(-146px,110px,0); }
+.shooting-star--seven { --meteor-angle: -25deg; --meteor-scale: .72; --meteor-start: translate3d(92px,-60px,0); --meteor-mid: translate3d(-72px,47px,0); --meteor-end: translate3d(-162px,106px,0); }
+.shooting-star--eight { --meteor-angle: -39deg; --meteor-scale: .55; --meteor-start: translate3d(70px,-62px,0); --meteor-mid: translate3d(-62px,55px,0); --meteor-end: translate3d(-136px,122px,0); }
+.shooting-star--nine { --meteor-angle: -28deg; --meteor-scale: .62; --meteor-start: translate3d(82px,-54px,0); --meteor-mid: translate3d(-75px,49px,0); --meteor-end: translate3d(-154px,102px,0); }
+.shooting-star--ten { --meteor-angle: -33deg; --meteor-scale: .58; --meteor-start: translate3d(74px,-58px,0); --meteor-mid: translate3d(-67px,51px,0); --meteor-end: translate3d(-144px,110px,0); }
+.shooting-star--eleven { --meteor-angle: -27deg; --meteor-scale: .64; --meteor-start: translate3d(90px,-57px,0); --meteor-mid: translate3d(-77px,49px,0); --meteor-end: translate3d(-168px,108px,0); }
+.shooting-star--twelve { --meteor-angle: -38deg; --meteor-scale: .54; --meteor-start: translate3d(68px,-62px,0); --meteor-mid: translate3d(-61px,56px,0); --meteor-end: translate3d(-134px,123px,0); }
+@media (prefers-reduced-motion: reduce) {
+  .scene--bloom.is-bouquet .bouquet-arrivals { animation: none !important; opacity: 0 !important; }
+  .scene--bloom.is-bouquet .bouquet-flower, .scene--bloom.is-bouquet .bouquet-bow { animation: none !important; opacity: 0 !important; }
+  .scene--bloom.is-bouquet .bouquet-art { animation: none !important; opacity: 1 !important; transform: none !important; filter: none !important; }
+  .shooting-star { animation: none !important; opacity: 0 !important; }
+}
+
+
+/* Tùy chọn khung ảnh và link riêng: dễ thao tác trên màn hình điện thoại. */
+.photo-list__fields { gap: 7px; }
+.photo-list__view { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(82px, .75fr); gap: 7px; }
+.photo-list__view .photo-edit-field { min-width: 0; }
+.photo-list__view select { width: 100%; min-width: 0; min-height: 48px; padding: 6px 8px; border: 1px solid rgba(73,104,156,.22); border-radius: 9px; color: #34426c; background: rgba(255,255,255,.95); font: 700 11px Manrope, sans-serif; }
+.photo-list__item > img { border: 1px solid rgba(255,255,255,.92); box-shadow: 0 0 7px rgba(123,218,255,.8), 0 0 15px rgba(93,165,255,.3); }
+.share-link-label { margin-top: 3px; color: #58648b; font-size: 9px; font-weight: 900; letter-spacing: .045em; line-height: 1.35; }
+.share-link-label--recipient { margin-top: 7px; padding-top: 10px; border-top: 1px solid rgba(69,111,168,.2); color: #813d72; }
+.share-link-output { min-height: 48px; font-size: 11px; }
+.share-owner-copy { min-height: 44px; }
+.share-result__actions { grid-template-columns: 1fr; }
+.share-result__actions button { min-height: 48px; padding-inline: 8px; }
+.memory-card img { object-fit: var(--photo-fit, contain); object-position: var(--photo-position, center); }
+.memory-card:not(.is-placeholder) { border-color: rgba(250,254,255,.98); box-shadow: 0 0 8px #dcf8ff, 0 0 21px rgba(75,202,255,.92), 0 0 38px rgba(78,134,255,.58), inset 0 0 7px rgba(255,255,255,.46); }
+.memory-card:not(.is-placeholder)::after { content: ""; position: absolute; z-index: 2; inset: -4px; border: 1px solid rgba(207,246,255,.82); border-radius: 9px; box-shadow: 0 0 9px rgba(153,236,255,.8), inset 0 0 8px rgba(209,247,255,.2); pointer-events: none; animation: photoFrameGlow 2.7s ease-in-out infinite alternate; }
+@keyframes photoFrameGlow { from { opacity: .46; filter: brightness(.92); } to { opacity: .95; filter: brightness(1.18); } }
+.is-recipient-view #settingsToggle, .is-recipient-view .gallery-hint { display: none !important; }
+
+/* Hoàn tất chuyển cảnh tulip -> bó ảnh trước khi hiện nút mở thư. */
+.scene--bloom.is-bouquet .bouquet-paper--bloom { animation: paperSettle .7s .35s var(--ease) both, paperFadeOut .72s 3.35s ease forwards; }
+
+@media (min-width: 390px) {
+  .share-result__actions { grid-template-columns: 1fr 1fr; }
+  .share-result__actions button { font-size: 11px; }
+}
+@media (max-width: 350px) {
+  .photo-list__view { grid-template-columns: 1fr; }
+  .share-result__actions { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .memory-card:not(.is-placeholder)::after { animation: none; opacity: .65; }
+}

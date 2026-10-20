@@ -1,8 +1,9 @@
-Đặt ảnh kỷ niệm và file nhạc nền vào thư mục này.
+# Tài nguyên của thiệp 20/10
 
-Ví dụ:
-- anh-01.jpg
-- anh-02.jpg
-- nhac-nen.mp3
+Các minh họa mặc định của cảnh đêm sao nằm trong thư mục này:
 
-Sau đó sửa đường dẫn `./assets/ten-file` trong `config.js` rồi commit/push lại.
+- `night-meadow-20-10.webp` — nền dọc tối ưu cho điện thoại, đồng cỏ đêm và sao băng.
+- `tulip-bouquet-20-10.webp` — bó tulip nền trong suốt, nở ở màn hoa và xuất hiện lại trong hiệu ứng chuyển cảnh.
+- `og-preview-20-10.jpg` — ảnh ngang 1200×630 dùng làm ảnh Open Graph cho Zalo/Facebook.
+
+Người dùng vẫn có thể chọn ảnh nền, ảnh album và nhạc cá nhân trong phần **✦ Cá nhân hóa** của trang; các tệp họ chọn được nén/đóng gói vào link thiệp riêng. Không đưa ảnh hoặc nhạc riêng tư vào thư mục công khai này.

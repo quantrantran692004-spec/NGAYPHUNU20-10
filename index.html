@@ -4,14 +4,29 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#061447" />
-    <meta name="description" content="Một món quà 20/10 có hoa tulip, lá thư và album ảnh kỷ niệm." />
-    <meta property="og:title" content="Một món quà dành cho em" />
-    <meta property="og:description" content="Thiệp 20/10 tương tác với hoa tulip và album ảnh kỷ niệm." />
-    <title>20/10 — Một món quà dành cho em</title>
+    <meta name="description" content="Thiệp 20/10 tương tác với bó hoa tulip dưới trời sao, lá thư yêu thương và album kỷ niệm." />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="vi_VN" />
+    <meta property="og:site_name" content="Thiệp 20/10" />
+    <meta property="og:title" content="Thiệp 20/10 — Bó hoa dưới trời sao" />
+    <meta property="og:description" content="Mở món quà 20/10: bó tulip nở giữa đồng cỏ đêm đầy sao, kèm lá thư và album kỷ niệm." />
+    <meta property="og:url" content="https://quantrantran692004-spec.github.io/NGAYPHUNU20-10/" />
+    <meta property="og:image" content="https://quantrantran692004-spec.github.io/NGAYPHUNU20-10/assets/og-preview-20-10.jpg" />
+    <meta property="og:image:secure_url" content="https://quantrantran692004-spec.github.io/NGAYPHUNU20-10/assets/og-preview-20-10.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Bó tulip hồng dưới bầu trời xanh đêm đầy sao băng và đồng cỏ phát sáng." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Thiệp 20/10 — Bó hoa dưới trời sao" />
+    <meta name="twitter:description" content="Mở món quà 20/10: bó tulip, lá thư và album kỷ niệm." />
+    <meta name="twitter:image" content="https://quantrantran692004-spec.github.io/NGAYPHUNU20-10/assets/og-preview-20-10.jpg" />
+    <link rel="canonical" href="https://quantrantran692004-spec.github.io/NGAYPHUNU20-10/" />
+    <title>Thiệp 20/10 — Bó hoa dưới trời sao</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Fraunces:opsz,wght@9..144,500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=night-meadow-v5" />
   </head>
   <body>
     <main id="app" class="app-shell" data-screen="cover" aria-live="polite">
@@ -23,7 +38,15 @@
         <div class="shooting-star shooting-star--three"></div>
         <div class="shooting-star shooting-star--four"></div>
         <div class="shooting-star shooting-star--five"></div>
+        <div class="shooting-star shooting-star--six"></div>
+        <div class="shooting-star shooting-star--seven"></div>
+        <div class="shooting-star shooting-star--eight"></div>
+        <div class="shooting-star shooting-star--nine"></div>
+        <div class="shooting-star shooting-star--ten"></div>
+        <div class="shooting-star shooting-star--eleven"></div>
+        <div class="shooting-star shooting-star--twelve"></div>
         <div class="meadow"><span></span><span></span><span></span><span></span><span></span></div>
+        <div id="windGrass" class="wind-grass"></div>
         <div id="petals" class="petals"></div>
       </div>
       <div id="customBackground" class="custom-background" aria-hidden="true"></div>
@@ -108,10 +131,10 @@
           <div><p class="eyebrow">CÁ NHÂN HÓA MÓN QUÀ</p><h2 id="settingsHeading">Chỉnh thiệp của hai mình</h2></div>
           <button id="closeSettings" class="close-button" type="button" aria-label="Đóng phần cá nhân hóa">×</button>
         </div>
-        <p class="settings-note">Chỉnh tên, lời chúc, ảnh và nhạc cho riêng bạn. Khi lưu, thiệp sẽ tạo một link cá nhân để bạn gửi ngay.</p>
-        <form id="settingsForm" class="settings-form">
-          <label>Người nhận<input id="recipientInput" name="recipient" type="text" placeholder="Ví dụ: Em yêu" /></label>
-          <label>Tên người gửi<input id="senderInput" name="sender" type="text" placeholder="Ví dụ: Anh" /></label>
+          <p class="settings-note">Sau khi lưu, bạn nhận hai link: giữ link gốc để chỉnh sửa; chỉ gửi link người nhận — link này chỉ xem và ẩn phần cài đặt.</p>
+          <form id="settingsForm" class="settings-form">
+            <label>Người nhận<input id="recipientInput" name="recipient" type="text" placeholder="Ví dụ: Em yêu" /></label>
+            <label>Tên người gửi<input id="senderInput" name="sender" type="text" placeholder="Ví dụ: Anh" /></label>
           <label>Tiêu đề chính<textarea id="titleInput" name="title" rows="2"></textarea></label>
           <label>Lời chúc ngắn<textarea id="greetingInput" name="greeting" rows="3"></textarea></label>
           <label>Nội dung lá thư<textarea id="letterInput" name="letter" rows="7"></textarea></label>
@@ -123,15 +146,19 @@
             <label>Nhạc nền <span class="label-help">MP3, M4A hoặc tệp âm thanh</span><input id="musicInput" type="file" accept="audio/*" /></label>
             <div class="media-control__footer"><span id="musicStatus" class="media-status"></span><button id="clearMusic" class="media-clear" type="button">Gỡ nhạc</button></div>
           </div>
-          <label>Ảnh kỷ niệm <span class="label-help">Chọn nhiều ảnh cùng lúc</span><input id="photosInput" type="file" accept="image/*" multiple /></label>
+          <label>Ảnh kỷ niệm <span class="label-help">Chọn nhiều ảnh; từng ảnh có thể chọn vừa khung không cắt hoặc phủ khung và canh vị trí</span><input id="photosInput" type="file" accept="image/*" multiple /></label>
           <div id="photoList" class="photo-list"></div>
           <section id="shareResult" class="share-result" aria-live="polite" hidden>
-            <p class="share-result__title">Thiệp của bạn đã sẵn sàng</p>
+            <p class="share-result__title">Hai link thiệp đã sẵn sàng</p>
             <p id="shareLinkNote" class="share-result__note">Link riêng được tạo sau khi lưu.</p>
-            <input id="shareLinkOutput" class="share-link-output" type="text" readonly aria-label="Link riêng của thiệp" />
+            <label class="share-link-label" for="ownerLinkOutput">LINK GỐC · giữ riêng để chỉnh sửa</label>
+            <input id="ownerLinkOutput" class="share-link-output" type="text" readonly aria-label="Link gốc để chỉnh sửa thiệp" />
+            <button id="copyOwnerLink" class="secondary-button share-owner-copy" type="button">Sao chép link gốc</button>
+            <label class="share-link-label share-link-label--recipient" for="shareLinkOutput">LINK GỬI NGƯỜI YÊU · chỉ xem, ẩn cài đặt</label>
+            <input id="shareLinkOutput" class="share-link-output" type="text" readonly aria-label="Link chỉ xem dành cho người nhận" />
             <div class="share-result__actions">
-              <button id="sendShareLink" class="primary-button" type="button">Gửi link</button>
-              <button id="copyShareLink" class="secondary-button" type="button">Sao chép link</button>
+              <button id="sendShareLink" class="primary-button" type="button">Gửi link người nhận</button>
+              <button id="copyShareLink" class="secondary-button" type="button">Sao chép link người nhận</button>
             </div>
           </section>
           <div class="settings-actions">
@@ -145,6 +172,6 @@
       <div id="toast" class="toast" role="status" aria-live="polite"></div>
     </main>
     <script src="./config.js"></script>
-    <script src="./app.js?v=mobile-share-v4"></script>
+    <script src="./app.js?v=night-meadow-v4"></script>
   </body>
 </html>
