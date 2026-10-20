@@ -647,17 +647,20 @@
     input.focus();
     input.select();
     try { input.setSelectionRange(0, input.value.length); } catch (error) { /* Một số trình duyệt không hỗ trợ. */ }
-    try { return document.execCommand('copy'); } catch (error) { return false; }
+    try { document.execCommand('copy'); } catch (error) { console.warn('Không xác nhận được sao chép bằng trình duyệt:', error); }
+    // Trên một số điện thoại, execCommand trả true dù clipboard không nhận nội dung.
+    // Chỉ Clipboard API thành công mới được báo là đã sao chép; fallback chỉ chọn link.
+    return false;
   }
 
   async function copyOwnerLink() {
     const copied = await copyText($('#ownerLinkOutput').value, '#ownerLinkOutput');
-    showToast(copied ? 'Đã sao chép link gốc để chỉnh sửa.' : 'Link gốc đã được chọn; hãy nhấn giữ để sao chép.');
+    showToast(copied ? 'Đã sao chép link gốc để chỉnh sửa.' : 'Chưa xác nhận được sao chép. Link gốc đã được chọn; hãy nhấn giữ để sao chép thủ công.');
   }
 
   async function copyPersonalLink() {
     const copied = await copyText($('#shareLinkOutput').value);
-    showToast(copied ? 'Đã sao chép link riêng của bạn.' : 'Link đã được chọn; hãy nhấn giữ để sao chép.');
+    showToast(copied ? 'Đã sao chép link riêng của bạn.' : 'Chưa xác nhận được sao chép. Link đã được chọn; hãy nhấn giữ để sao chép thủ công.');
   }
 
   async function sendPersonalLink() {
@@ -672,7 +675,7 @@
       }
     }
     const copied = await copyText(url);
-    showToast(copied ? 'Đã sao chép link người nhận.' : 'Link đã được chọn; hãy nhấn giữ để sao chép.');
+    showToast(copied ? 'Đã sao chép link người nhận.' : 'Chưa xác nhận được sao chép. Link đã được chọn; hãy nhấn giữ để sao chép thủ công.');
   }
 
   async function handleSettingsSubmit(event) {
@@ -744,7 +747,7 @@
       catch (error) { if (error.name === 'AbortError') return; console.warn('Không mở được bảng chia sẻ:', error); }
     }
     const copied = await copyText(url);
-    showToast(copied ? 'Đã sao chép link riêng của thiệp.' : 'Link đã được chọn; hãy nhấn giữ để sao chép.');
+    showToast(copied ? 'Đã sao chép link riêng của thiệp.' : 'Chưa xác nhận được sao chép. Link đã được chọn; hãy nhấn giữ để sao chép thủ công.');
   }
 
   function toggleMusic() {
