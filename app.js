@@ -14,6 +14,9 @@
     photoProcessing: Promise.resolve(),
     isDirty: false,
     photos: [],
+    galleryFrame: 0,
+    galleryCards: [],
+    letterFrame: 0,
     audioUrl: '',
     backgroundUrl: '',
     bloomTimer: null,
@@ -71,8 +74,14 @@
   }
 
   function persistConfig() {
-    const serializable = { ...state.config, photos: state.config.photos.map(({ src, caption, note, fit, position }) => ({ src, caption, note, fit, position })) };
-    try { localStorage.setItem(storageKey, JSON.stringify(serializable)); } catch (error) { console.warn('localStorage đầy:', error); }
+    try {
+      const serializable = { ...state.config, photos: state.config.photos.map(({ src, caption, note, fit, position }) => ({ src, caption, note, fit, position })) };
+      localStorage.setItem(storageKey, JSON.stringify(serializable));
+      return true;
+    } catch (error) {
+      console.warn('Không lưu được cấu hình cục bộ:', error);
+      return false;
+    }
   }
 
   function showToast(message) {
@@ -84,6 +93,11 @@
   }
 
   function setScreen(name) {
+    if (name !== 'letter' && state.letterFrame) {
+      cancelAnimationFrame(state.letterFrame);
+      state.letterFrame = 0;
+      $('#letterBody')?.classList.remove('is-writing');
+    }
     state.screen = name;
     app.dataset.screen = name;
     screens.forEach((scene) => {
@@ -91,6 +105,29 @@
       scene.hidden = !active;
       scene.classList.toggle('is-active', active);
     });
+  }
+
+  function openLetter() {
+    setScreen('letter');
+    const body = $('#letterBody');
+    const text = String(state.config.letter || '');
+    const characters = Array.from(text);
+    body.textContent = '';
+    body.classList.add('is-writing');
+    const startedAt = performance.now();
+    const duration = 3000;
+    const write = (now) => {
+      const progress = Math.min(1, (now - startedAt) / duration);
+      const count = Math.floor(characters.length * progress);
+      body.textContent = characters.slice(0, count).join('');
+      if (progress < 1) state.letterFrame = requestAnimationFrame(write);
+      else {
+        body.textContent = text;
+        body.classList.remove('is-writing');
+        state.letterFrame = 0;
+      }
+    };
+    state.letterFrame = requestAnimationFrame(write);
   }
 
   function createStars() {
@@ -139,6 +176,11 @@
   function prepareBloom() {
     $('#bouquetFlowers').innerHTML = bouquetMarkup('Bó tulip hồng được gói giấy kem và thắt nơ hồng.');
     $('#fadeBouquetFlowers').innerHTML = bouquetMarkup('', false);
+    const configuredTitle = String(state.config.title || '');
+    const coverTitleMarkup = configuredTitle === "Happy Vietnamese Women's Day 20/10"
+      ? "Happy Vietnamese<br /><em>Women's Day</em> <strong>20/10</strong>"
+      : escapeHtml(configuredTitle).replace(/20\/10/g, '<strong>20/10</strong>').replace(/\r?\n/g, '<br />');
+    $('#coverTitle').innerHTML = coverTitleMarkup;
     $('#bloomGreeting').textContent = state.config.greeting;
     $('#bloomTitle').innerHTML = `${escapeHtml(state.config.title).replace('20/10', '<em>20/10</em>')}`;
     $('#letterHeading').textContent = `Gửi ${state.config.recipient}, người anh yêu`;
@@ -198,24 +240,184 @@
     }));
   }
 
+  function getGalleryBatchSizes(total) {
+    const sizes = [];
+    let remaining = total;
+    let batchIndex = 0;
+    while (remaining > 0) {
+      const size = Math.min(batchIndex % 2 === 0 ? 2 : 3, remaining);
+      sizes.push(size);
+      remaining -= size;
+      batchIndex += 1;
+    }
+    return sizes;
+  }
+
   function renderGallery() {
     normalizePhotos();
     const track = $('#galleryTrack');
     track.innerHTML = state.photos.map((photo, index) => {
-      const left = [4, 60, 35, 73, 12, 48, 80, 24, 66, 2, 43, 79][index % 12];
-      const width = [82, 91, 109, 76, 90, 101, 84][index % 7];
-      const height = Math.round(width * 1.24);
-      const rotate = [-8, 7, -3, 10, -11, 4, -6, 12][index % 8];
-      const duration = 8.5 + (index % 5) * .55;
-      const delay = -(index * 1.65);
-      const drift = index % 2 ? '-22px' : '18px';
+      const width = Math.round(Math.min(150, window.innerWidth * .32));
+      const height = Math.round(width * 1.45);
+      const rotate = [-5, 4, -2, 5, -4, 2][index % 6];
       const fit = photo.placeholder ? 'contain' : photo.fit;
-      return `<figure class="memory-card ${photo.placeholder ? 'is-placeholder' : ''}" style="--left:${left}%;--width:${width}px;--height:${height}px;--rotate:${rotate}deg;--duration:${duration}s;--delay:${delay}s;--drift:${drift};--photo-fit:${fit};--photo-position:${photo.position};--photo-a:${index % 2 ? '#4c68ad' : '#db7ca5'};--photo-b:${index % 2 ? '#59bee4' : '#f4c3d5'}"><img loading="lazy" decoding="async" src="${escapeAttr(photo.src)}" alt="${escapeAttr(photo.caption)}" /><figcaption>${escapeHtml(photo.caption)}<span>${escapeHtml(photo.note)}</span></figcaption></figure>`;
+      return `<figure class="memory-card ${photo.placeholder ? 'is-placeholder' : ''}" style="--width:${width}px;--height:${height}px;--rotate:${rotate}deg;--photo-fit:${fit};--photo-position:${photo.position};--photo-a:${index % 2 ? '#4c68ad' : '#db7ca5'};--photo-b:${index % 2 ? '#59bee4' : '#f4c3d5'}"><img loading="eager" decoding="async" fetchpriority="high" src="${escapeAttr(photo.src)}" alt="${escapeAttr(photo.caption)}" /></figure>`;
     }).join('');
-    track.querySelectorAll('img').forEach((image, index) => image.addEventListener('error', () => {
-      image.src = placeholderData(index);
-      image.closest('.memory-card')?.classList.add('is-placeholder');
-    }, { once: true }));
+    track.querySelectorAll('img').forEach((image, index) => {
+      const useOriginalAspectRatio = () => {
+        if (!image.naturalWidth || !image.naturalHeight) return;
+        const card = image.closest('.memory-card');
+        const width = Number.parseFloat(card?.style.getPropertyValue('--width'));
+        if (card && width) card.style.setProperty('--height', `${Math.round(width * image.naturalHeight / image.naturalWidth)}px`);
+      };
+      image.addEventListener('load', useOriginalAspectRatio, { once: true });
+      if (image.complete) useOriginalAspectRatio();
+      image.addEventListener('error', () => {
+        image.src = placeholderData(index);
+        image.closest('.memory-card')?.classList.add('is-placeholder');
+      }, { once: true });
+    });
+    animateGalleryHeartRise(track);
+  }
+
+  function heartFormationPoint(slot, count, width, height, centerX, laneWidth) {
+    const layouts = {
+      1: [[0, 0]],
+      2: [[-.28, -.19], [.28, .19]],
+      3: [[-.28, -.12], [.28, -.12], [0, .15]]
+    };
+    const [x, y] = layouts[count][slot];
+    return { x: centerX + x * laneWidth, y: height * (.53 + y) };
+  }
+
+  function galleryDrift(card, progress, now, width) {
+    const sway = Math.sin(now / 1900 + card.index * 1.7) * Math.min(width * .012, card.laneWidth * .015);
+    return {
+      x: (card.mode === 'solo' ? Math.sin(progress * Math.PI * 2 + card.index) * Math.min(width * .07, card.laneWidth * .06) : 0) + sway,
+      y: Math.cos(now / 2300 + card.index * 1.4) * 4
+    };
+  }
+
+  function animateGalleryHeartRise(track) {
+    cancelAnimationFrame(state.galleryFrame);
+    const elements = [...track.querySelectorAll('.memory-card')];
+    const cards = elements.map((element, index) => ({ element, index, mode: '', unit: 0, slot: 0, unitSize: 1, baseX: 0, baseY: 0, dragX: 0, dragY: 0, dragging: false, x: 0, y: 0, pointerX: 0, pointerY: 0, startX: 0, startY: 0 }));
+    state.galleryCards = cards;
+    if (!cards.length) return;
+
+    const units = [];
+    let nextCard = 0;
+    for (const [unitIndex, batchSize] of getGalleryBatchSizes(cards.length).entries()) {
+      const group = cards.slice(nextCard, nextCard + batchSize);
+      nextCard += batchSize;
+      const heartCards = group.length >= 4 ? group.slice(0, 3) : group.length === 1 ? [] : group;
+      const soloCards = group.filter((card) => !heartCards.includes(card));
+      heartCards.forEach((card, slot) => { card.mode = 'heart'; card.unit = unitIndex; card.slot = slot; });
+      soloCards.forEach((card) => { card.mode = 'solo'; card.unit = unitIndex; });
+      units.push({ cards: group, heartCards, soloCards, index: unitIndex });
+    }
+
+    const flightDuration = 13000;
+    const unitInterval = 2800;
+    units.forEach((unit, index) => { unit.startAt = index * unitInterval; unit.duration = flightDuration; });
+    const cycleDuration = flightDuration + unitInterval * Math.max(0, units.length - 1);
+    let trackWidth = 0;
+    let trackHeight = 0;
+    let cardHeightSignature = '';
+    const refreshLayout = () => {
+      trackWidth = track.clientWidth;
+      trackHeight = track.clientHeight;
+      for (const unit of units) {
+        unit.laneWidth = trackWidth;
+        unit.centerX = trackWidth * .5;
+        unit.verticalOffset = trackHeight * .12 * unit.index;
+        unit.heartCards.forEach((card) => {
+            card.laneWidth = unit.laneWidth;
+            const point = heartFormationPoint(card.slot, unit.heartCards.length, trackWidth, trackHeight, unit.centerX, unit.laneWidth);
+            card.baseX = point.x;
+            card.baseY = point.y;
+        });
+        unit.soloCards.forEach((card) => {
+          card.laneWidth = unit.laneWidth;
+          const side = unit.index % 2 === 0 ? -1 : 1;
+          card.baseX = unit.centerX + unit.laneWidth * .34 * side;
+          card.baseY = trackHeight * .86;
+        });
+        const heights = unit.cards.map((card) => card.element.offsetHeight || 140);
+        unit.minY = Math.min(...unit.cards.map((card) => card.baseY));
+        unit.maxY = Math.max(...unit.cards.map((card) => card.baseY));
+        unit.maxCardHeight = Math.max(...heights);
+        unit.startOffset = trackHeight + unit.maxCardHeight / 2 - unit.maxY;
+        unit.endOffset = -unit.maxCardHeight / 2 - unit.minY;
+      }
+      cardHeightSignature = cards.map((card) => card.element.offsetHeight || 140).join(',');
+    };
+    refreshLayout();
+    const startedAt = performance.now();
+
+    for (const card of cards) {
+      card.element.addEventListener('pointerdown', (event) => {
+        event.preventDefault();
+        card.dragging = true;
+        card.element.classList.add('is-dragging');
+        card.element.setPointerCapture(event.pointerId);
+        const trackRect = track.getBoundingClientRect();
+        const cardRect = card.element.getBoundingClientRect();
+        card.x = cardRect.left + cardRect.width / 2 - trackRect.left;
+        card.y = cardRect.top + cardRect.height / 2 - trackRect.top;
+        card.pointerX = event.clientX;
+        card.pointerY = event.clientY;
+        card.startX = card.x;
+        card.startY = card.y;
+      });
+      card.element.addEventListener('pointermove', (event) => {
+        if (!card.dragging) return;
+        card.x = card.startX + event.clientX - card.pointerX;
+        card.y = card.startY + event.clientY - card.pointerY;
+      });
+      const release = (event) => {
+        if (!card.dragging) return;
+        card.x = card.startX + event.clientX - card.pointerX;
+        card.y = card.startY + event.clientY - card.pointerY;
+        const now = performance.now();
+        const cycleTime = (now - startedAt) % cycleDuration;
+        const unit = units[card.unit];
+        const progress = Math.max(0, Math.min(1, (cycleTime - unit.startAt) / unit.duration));
+        const rise = unit.startOffset + (unit.endOffset - unit.startOffset) * progress;
+        const drift = galleryDrift(card, progress, now, trackWidth);
+        card.dragX = card.x - card.baseX - drift.x;
+        card.dragY = card.y - card.baseY - unit.verticalOffset - rise - drift.y;
+        card.dragging = false;
+        card.element.classList.remove('is-dragging');
+      };
+      card.element.addEventListener('pointerup', release);
+      card.element.addEventListener('pointercancel', release);
+    }
+
+    const draw = (now) => {
+      if (!track.isConnected) return;
+      const currentHeightSignature = cards.map((card) => card.element.offsetHeight || 140).join(',');
+      if (track.clientWidth !== trackWidth || track.clientHeight !== trackHeight || currentHeightSignature !== cardHeightSignature) refreshLayout();
+      const cycleTime = (now - startedAt) % cycleDuration;
+      for (const card of cards) {
+        const unit = units[card.unit];
+        const localTime = cycleTime - unit.startAt;
+        const active = localTime >= 0 && localTime < unit.duration;
+        const progress = Math.max(0, Math.min(1, localTime / unit.duration));
+        const rise = unit.startOffset + (unit.endOffset - unit.startOffset) * progress;
+        const drift = galleryDrift(card, progress, now, trackWidth);
+        if (!card.dragging) {
+          card.x = card.baseX + drift.x + card.dragX;
+          card.y = card.baseY + rise + unit.verticalOffset + drift.y + card.dragY;
+        }
+        const fade = Math.max(0, Math.min(1, progress / .08, (1 - progress) / .1));
+        const smoothFade = fade * fade * (3 - 2 * fade);
+        card.element.style.opacity = card.dragging ? '1' : active ? String(smoothFade) : '0';
+        card.element.style.transform = `translate3d(${card.x - card.element.offsetWidth / 2}px, ${card.y - card.element.offsetHeight / 2}px, 0) rotate(${[-5, 4, -2, 5, -4, 2][card.index % 6]}deg)`;
+      }
+      state.galleryFrame = requestAnimationFrame(draw);
+    };
+    state.galleryFrame = requestAnimationFrame(draw);
   }
 
   function escapeHtml(value) { return String(value || '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char])); }
@@ -253,6 +455,7 @@
     $('#settingsToggle').hidden = state.recipientView;
     $('.gallery-hint').hidden = state.recipientView;
     document.body.classList.toggle('is-recipient-view', state.recipientView);
+    $('#settingsPanel').inert = state.recipientView;
     if (state.recipientView) {
       closeSettings();
       $('#shareResult').hidden = true;
@@ -280,7 +483,7 @@
       const fit = photo.fit === 'cover' ? 'cover' : 'contain';
       const position = ['center', 'top', 'bottom', 'left', 'right'].includes(photo.position) ? photo.position : 'center';
       const positions = [['center', 'Giữa'], ['top', 'Trên'], ['bottom', 'Dưới'], ['left', 'Trái'], ['right', 'Phải']];
-      return `<article class="photo-list__item"><img data-photo-preview="${index}" src="${escapeAttr(photo.src || placeholderData(index))}" alt="Xem trước ${index + 1}" style="object-fit:${fit};object-position:${position}" /><div class="photo-list__fields"><label class="photo-edit-field">Chú thích<input type="text" data-photo-caption="${index}" value="${escapeAttr(photo.caption || `Ảnh ${index + 1}`)}" aria-label="Chú thích ảnh ${index + 1}" /></label><label class="photo-edit-field">Ghi chú<input type="text" data-photo-note="${index}" value="${escapeAttr(photo.note || '')}" aria-label="Ghi chú ảnh ${index + 1}" /></label><div class="photo-list__view"><label class="photo-edit-field">Cách hiển thị<select data-photo-fit="${index}" aria-label="Cách hiển thị ảnh ${index + 1}"><option value="contain" ${fit === 'contain' ? 'selected' : ''}>Vừa khung · không cắt</option><option value="cover" ${fit === 'cover' ? 'selected' : ''}>Phủ khung · có thể cắt</option></select></label><label class="photo-edit-field">Canh ảnh<select data-photo-position="${index}" aria-label="Canh ảnh ${index + 1}">${positions.map(([value, label]) => `<option value="${value}" ${position === value ? 'selected' : ''}>${label}</option>`).join('')}</select></label></div></div><div class="photo-list__controls"><button type="button" data-move-photo="up:${index}" aria-label="Đưa ảnh ${index + 1} lên trước" ${index === 0 ? 'disabled' : ''}>↑</button><button type="button" data-move-photo="down:${index}" aria-label="Đưa ảnh ${index + 1} xuống sau" ${index === photos.length - 1 ? 'disabled' : ''}>↓</button><label class="photo-replace" title="Thay ảnh">Đổi<input type="file" data-replace-photo="${index}" accept="image/*" aria-label="Thay ảnh ${index + 1}" /></label><button type="button" data-remove-photo="${index}" aria-label="Xóa ảnh ${index + 1}">×</button></div></article>`;
+      return `<article class="photo-list__item"><button class="photo-list__preview" data-photo-replace-trigger="${index}" type="button" aria-label="Chạm ảnh đại diện ${index + 1} để thay"><img data-photo-preview="${index}" src="${escapeAttr(photo.src || placeholderData(index))}" alt="" style="object-fit:${fit};object-position:${position}" /><span>Chạm để đổi</span></button><div class="photo-list__fields"><label class="photo-edit-field">Chú thích<input type="text" data-photo-caption="${index}" value="${escapeAttr(photo.caption || `Ảnh ${index + 1}`)}" aria-label="Chú thích ảnh ${index + 1}" /></label><label class="photo-edit-field">Ghi chú<input type="text" data-photo-note="${index}" value="${escapeAttr(photo.note || '')}" aria-label="Ghi chú ảnh ${index + 1}" /></label><div class="photo-list__view"><label class="photo-edit-field">Cách hiển thị<select data-photo-fit="${index}" aria-label="Cách hiển thị ảnh ${index + 1}"><option value="contain" ${fit === 'contain' ? 'selected' : ''}>Vừa khung · không cắt</option><option value="cover" ${fit === 'cover' ? 'selected' : ''}>Phủ khung · có thể cắt</option></select></label><label class="photo-edit-field">Canh ảnh<select data-photo-position="${index}" aria-label="Canh ảnh ${index + 1}">${positions.map(([value, label]) => `<option value="${value}" ${position === value ? 'selected' : ''}>${label}</option>`).join('')}</select></label></div></div><div class="photo-list__controls"><button type="button" data-move-photo="up:${index}" aria-label="Đưa ảnh ${index + 1} lên trước" ${index === 0 ? 'disabled' : ''}>↑</button><button type="button" data-move-photo="down:${index}" aria-label="Đưa ảnh ${index + 1} xuống sau" ${index === photos.length - 1 ? 'disabled' : ''}>↓</button><input class="photo-replace-input" type="file" data-replace-photo="${index}" accept="image/*,.heic,.heif" aria-label="Thay ảnh ${index + 1}" hidden /><button type="button" data-remove-photo="${index}" aria-label="Xóa ảnh ${index + 1}">×</button></div></article>`;
     }).join('');
     list.querySelectorAll('[data-photo-caption]').forEach((input) => input.addEventListener('input', () => { state.config.photos[Number(input.dataset.photoCaption)].caption = input.value; }));
     list.querySelectorAll('[data-photo-note]').forEach((input) => input.addEventListener('input', () => { state.config.photos[Number(input.dataset.photoNote)].note = input.value; }));
@@ -313,16 +516,29 @@
       markShareDirty();
       renderPhotoList();
     }));
-    list.querySelectorAll('[data-replace-photo]').forEach((input) => input.addEventListener('change', async () => {
+    list.querySelectorAll('[data-photo-replace-trigger]').forEach((button) => button.addEventListener('click', () => {
+      const input = list.querySelector(`[data-replace-photo="${button.dataset.photoReplaceTrigger}"]`);
+      input?.click();
+    }));
+    list.querySelectorAll('[data-replace-photo]').forEach((input) => input.addEventListener('change', () => {
       const file = input.files[0];
       const index = Number(input.dataset.replacePhoto);
-      if (!file || !file.type.startsWith('image/')) { showToast('Chọn một tệp ảnh để thay ảnh này.'); return; }
+      const photo = state.config.photos[index];
+      input.value = '';
+      if (!file || !photo || (!file.type.startsWith('image/') && !/\.(heic|heif)$/i.test(file.name))) {
+        showToast('Chọn một tệp ảnh để thay ảnh này.');
+        return;
+      }
       markShareDirty();
-      try {
-        state.config.photos[index].src = await compressImage(file, 1280);
+      state.photoProcessing = state.photoProcessing.then(async () => {
+        photo.src = await compressImage(file, 1280);
+        if (!state.config.photos.includes(photo)) return;
         renderPhotoList();
-        showToast('Đã thay ảnh. Bấm lưu để cập nhật link riêng.');
-      } catch (error) { showToast('Không đọc được ảnh này. Hãy thử tệp ảnh khác.'); }
+        showToast('Đã thay ảnh. Bấm lưu để cập nhật link mới.');
+      }).catch((error) => {
+        console.error('Không thay được ảnh:', error);
+        showToast('Không đọc được ảnh này. Hãy thử tệp ảnh khác.');
+      });
     }));
     $('#clearPhotos').addEventListener('click', () => {
       state.config.photos = [];
@@ -361,29 +577,35 @@
     const input = $('#photosInput');
     const files = [...input.files];
     input.value = '';
-    const validFiles = files.filter((file) => file.type.startsWith('image/'));
+    const validFiles = files.filter((file) => file.type.startsWith('image/') || /\.(heic|heif)$/i.test(file.name));
     if (validFiles.length !== files.length) showToast('Đã bỏ qua tệp không phải ảnh.');
     if (!validFiles.length) return;
     markShareDirty();
+    const uploadStatus = $('#photosUploadStatus');
+    uploadStatus.textContent = 'Đang xử lý ảnh mới...';
     state.photoProcessing = state.photoProcessing.then(async () => {
       const added = [];
       for (const [index, file] of validFiles.entries()) {
+        uploadStatus.textContent = 'Đang nén ảnh...';
         const src = await compressImage(file, 1280);
         added.push({ src, caption: file.name.replace(/\.[^.]+$/, '') || `Ảnh ${state.config.photos.length + index + 1}`, note: 'Ảnh của chúng mình', fit: 'contain', position: 'center' });
       }
       state.config.photos = [...(state.config.photos || []), ...added];
       renderPhotoList();
-      showToast(`Đã thêm ${added.length} ảnh. Bạn có thể sửa, sắp xếp hoặc xóa trước khi lưu.`);
+      uploadStatus.textContent = 'Đã thêm ảnh mới. Có thể sắp xếp hoặc xóa ảnh trong danh sách.';
+      showToast('Đã thêm ảnh mới. Bạn có thể sửa, sắp xếp hoặc xóa trước khi lưu.');
     }).catch((error) => {
       console.error('Không xử lý được ảnh đã chọn:', error);
-      showToast('Không đọc được một số ảnh. Hãy chọn lại tệp ảnh nhỏ hơn.');
+      uploadStatus.textContent = 'Ảnh chưa tải được. Hãy thử chọn lại ảnh khác.';
+      showToast('Không đọc được ảnh này. Hãy chọn tệp ảnh khác.');
     });
   }
 
   function markShareDirty() {
     state.isDirty = true;
     if (!$('#shareResult').hidden) {
-      $('#shareLinkNote').textContent = 'Có thay đổi chưa lưu. Hãy bấm “Lưu và tạo link riêng” trước khi gửi để link có nội dung mới nhất.';
+      $('#shareLinkNote').textContent = 'Có thay đổi chưa lưu. Hãy bấm “Lưu và tạo link riêng” trước khi sao chép hoặc gửi link.';
+      $('#copyOwnerLink').disabled = true;
       $('#copyShareLink').disabled = true;
       $('#sendShareLink').disabled = true;
     }
@@ -392,14 +614,17 @@
   function createShareLink(makeNewId = false) {
     if (makeNewId || !state.shareId) state.shareId = createShareId();
     state.isDirty = false;
-    state.ownerUrl = `${window.location.origin}${window.location.pathname}`;
-    state.shareUrl = `${state.ownerUrl}#gift=${encodeSharedConfig(state.config)}&sid=${encodeURIComponent(state.shareId)}&view=recipient`;
+    const baseUrl = `${window.location.origin}${window.location.pathname}`;
+    const gift = encodeSharedConfig(state.config);
+    const sid = encodeURIComponent(state.shareId);
+    state.ownerUrl = `${baseUrl}#gift=${gift}&sid=${sid}&view=owner`;
+    state.shareUrl = `${baseUrl}#gift=${gift}&sid=${sid}&view=recipient`;
     $('#shareResult').hidden = false;
     $('#ownerLinkOutput').value = state.ownerUrl;
     $('#shareLinkOutput').value = state.shareUrl;
     $('#shareLinkNote').textContent = state.shareUrl.length > 1800000
-      ? 'Link quá dài để gửi thuận tiện. Hãy dùng ảnh nhỏ hơn hoặc đặt ảnh/nhạc trong assets/ rồi tạo link mới.'
-      : 'Giữ link gốc để chỉnh sửa. Chỉ gửi link người nhận bên dưới — link này mở đúng thiệp đã lưu và ẩn phần cài đặt.';
+      ? 'Link chứa ảnh/nhạc quá dài; một số điện thoại có thể không sao chép hoặc mở ổn định. Hãy dùng tệp nhỏ hơn rồi lưu lại.'
+      : 'Link người nhận là bản lưu tại thời điểm tạo; sau khi sửa, hãy dùng link mới. Link gốc mang theo cấu hình để tiếp tục chỉnh sửa.';
     $('#copyOwnerLink').disabled = false;
     $('#copyShareLink').disabled = false;
     $('#sendShareLink').disabled = false;
@@ -407,36 +632,52 @@
   }
 
   async function copyText(text, fallbackSelector = '#shareLinkOutput') {
+    if (!text) return false;
     try {
-      if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(text); return true; }
-    } catch (error) { console.warn('Không dùng được clipboard API:', error); }
+      if (window.isSecureContext && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch (error) {
+      console.warn('Clipboard API bị chặn; thử cách sao chép tương thích hơn:', error);
+    }
     const input = $(fallbackSelector);
-    input.focus(); input.select(); input.setSelectionRange(0, input.value.length);
+    if (!input) return false;
+    input.value = text;
+    input.focus();
+    input.select();
+    try { input.setSelectionRange(0, input.value.length); } catch (error) { /* Một số trình duyệt không hỗ trợ. */ }
     try { return document.execCommand('copy'); } catch (error) { return false; }
   }
 
   async function copyOwnerLink() {
     const copied = await copyText($('#ownerLinkOutput').value, '#ownerLinkOutput');
-    showToast(copied ? 'Đã sao chép link gốc để chỉnh sửa.' : 'Hãy nhấn giữ link gốc để sao chép.');
+    showToast(copied ? 'Đã sao chép link gốc để chỉnh sửa.' : 'Link gốc đã được chọn; hãy nhấn giữ để sao chép.');
   }
 
   async function copyPersonalLink() {
     const copied = await copyText($('#shareLinkOutput').value);
-    showToast(copied ? 'Đã sao chép link riêng của bạn.' : 'Hãy nhấn giữ link để sao chép.');
+    showToast(copied ? 'Đã sao chép link riêng của bạn.' : 'Link đã được chọn; hãy nhấn giữ để sao chép.');
   }
 
   async function sendPersonalLink() {
     const url = $('#shareLinkOutput').value || createShareLink();
     if (navigator.share) {
-      try { await navigator.share({ title: 'Thiệp 20/10 của riêng mình', text: `Một món quà dành cho ${state.config.recipient}`, url }); }
-      catch (error) { if (error.name !== 'AbortError') showToast('Chưa gửi được; bạn có thể sao chép link.'); }
-      return;
+      try {
+        await navigator.share({ title: 'Thiệp 20/10 của riêng mình', text: `Một món quà dành cho ${state.config.recipient}`, url });
+        return;
+      } catch (error) {
+        if (error.name === 'AbortError') return;
+        console.warn('Không mở được bảng chia sẻ:', error);
+      }
     }
-    await copyPersonalLink();
+    const copied = await copyText(url);
+    showToast(copied ? 'Đã sao chép link người nhận.' : 'Link đã được chọn; hãy nhấn giữ để sao chép.');
   }
 
   async function handleSettingsSubmit(event) {
     event.preventDefault();
+    if (state.recipientView) return;
     const submitButton = $('#settingsForm button[type="submit"]');
     submitButton.disabled = true;
     submitButton.textContent = 'Đang lưu và tạo link…';
@@ -457,7 +698,7 @@
       if (!musicFile.type || musicFile.type.startsWith('audio/')) state.config.music = await readFileAsDataUrl(musicFile);
       else showToast('Nhạc nền cần là một tệp âm thanh.');
     }
-    persistConfig();
+    const locallyPersisted = persistConfig();
     setAudioSource(state.config.music);
     applyBackground(state.config.background);
     prepareBloom();
@@ -467,7 +708,7 @@
     $('#photosInput').value = '';
     updateMediaStatus();
     createShareLink(true);
-    showToast('Đã lưu và tạo link riêng. Bạn có thể sao chép hoặc gửi ngay.');
+    showToast(locallyPersisted ? 'Đã lưu nội dung và tạo link mới.' : 'Đã tạo link mới; bộ nhớ cục bộ đầy nên hãy sao chép link gốc để giữ bản chỉnh sửa.');
     $('#shareResult').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     } catch (error) {
       console.error('Không lưu được thiệp:', error);
@@ -496,11 +737,14 @@
   async function shareCard() {
     if (state.isDirty) { showToast('Có thay đổi chưa lưu. Hãy lưu để tạo link mới trước khi chia sẻ.'); openSettings(); return; }
     const url = createShareLink();
-    if (url.length > 1800000) showToast('Link rất dài vì có ảnh/nhạc nhúng; nên đặt file vào assets/ để link nhẹ hơn.');
+    if (url.length > 1800000) showToast('Link rất dài do có ảnh/nhạc nhúng; nên dùng tệp nhỏ hơn.');
     const shareData = { title: 'Thiệp 20/10 — Bó hoa dưới trời sao', text: `Một món quà dành cho ${state.config.recipient}`, url };
-    try {
-      if (navigator.share) { await navigator.share(shareData); showToast('Đã tạo link riêng cho người nhận.'); } else { await navigator.clipboard.writeText(url); showToast('Đã copy link riêng của thiệp.'); }
-    } catch (error) { if (error.name !== 'AbortError') { await navigator.clipboard?.writeText(url); showToast('Đã copy link riêng của thiệp.'); } }
+    if (navigator.share) {
+      try { await navigator.share(shareData); showToast('Đã mở bảng chia sẻ.'); return; }
+      catch (error) { if (error.name === 'AbortError') return; console.warn('Không mở được bảng chia sẻ:', error); }
+    }
+    const copied = await copyText(url);
+    showToast(copied ? 'Đã sao chép link riêng của thiệp.' : 'Link đã được chọn; hãy nhấn giữ để sao chép.');
   }
 
   function toggleMusic() {
@@ -530,7 +774,7 @@
       showToast('Đã mở nội dung của link thiệp này.');
     });
     $('#openGift').addEventListener('click', () => { if ($('#bgMusic').src) $('#bgMusic').play().catch(() => {}); beginBloom(); });
-    $('#readLetter').addEventListener('click', () => setScreen('letter'));
+    $('#readLetter').addEventListener('click', openLetter);
     $('#closeLetter').addEventListener('click', () => setScreen('bloom'));
     $('#continueToAlbum').addEventListener('click', startFade);
     $('#musicToggle').addEventListener('click', toggleMusic);
@@ -563,6 +807,7 @@
     $('#copyOwnerLink').addEventListener('click', copyOwnerLink);
     $('#copyShareLink').addEventListener('click', copyPersonalLink);
     $('#sendShareLink').addEventListener('click', sendPersonalLink);
+    $('#choosePhotosButton').addEventListener('click', () => $('#photosInput').click());
     $('#photosInput').addEventListener('change', handlePhotoSelection);
     $('#backgroundInput').addEventListener('change', () => {
       const file = $('#backgroundInput').files[0];
