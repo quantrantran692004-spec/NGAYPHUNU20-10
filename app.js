@@ -631,18 +631,26 @@
     return state.shareUrl;
   }
 
-  async function copyText(text, fallbackSelector = '#shareLinkOutput') {
-    if (!text) return false;
+  async function copyText(text, fallbackSelector = '#shareLinkOutput', useShareFallback = true) {
+    if (!text) return 'failed';
     try {
       if (window.isSecureContext && navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(text);
-        return true;
+        return 'copied';
       }
     } catch (error) {
       console.warn('Clipboard API bị chặn; thử cách sao chép tương thích hơn:', error);
     }
+    if (useShareFallback && navigator.share) {
+      try {
+        await navigator.share({ title: 'Link thiệp 20/10', text: 'Chọn “Sao chép” trong bảng chia sẻ để lưu link.', url: text });
+        return 'shared';
+      } catch (error) {
+        if (error.name !== 'AbortError') console.warn('Không mở được bảng chia sẻ hệ thống:', error);
+      }
+    }
     const input = $(fallbackSelector);
-    if (!input) return false;
+    if (!input) return 'failed';
     input.value = text;
     input.focus();
     input.select();
@@ -650,17 +658,23 @@
     try { document.execCommand('copy'); } catch (error) { console.warn('Không xác nhận được sao chép bằng trình duyệt:', error); }
     // Trên một số điện thoại, execCommand trả true dù clipboard không nhận nội dung.
     // Chỉ Clipboard API thành công mới được báo là đã sao chép; fallback chỉ chọn link.
-    return false;
+    return 'manual';
+  }
+
+  function copyStatusMessage(status, copiedMessage) {
+    if (status === 'copied') return copiedMessage;
+    if (status === 'shared') return 'Đã mở bảng chia sẻ. Chọn “Sao chép” để lưu link vào clipboard.';
+    return 'Chưa sao chép được tự động. Link đã được chọn; hãy nhấn giữ để sao chép thủ công.';
   }
 
   async function copyOwnerLink() {
-    const copied = await copyText($('#ownerLinkOutput').value, '#ownerLinkOutput');
-    showToast(copied ? 'Đã sao chép link gốc để chỉnh sửa.' : 'Chưa xác nhận được sao chép. Link gốc đã được chọn; hãy nhấn giữ để sao chép thủ công.');
+    const status = await copyText($('#ownerLinkOutput').value, '#ownerLinkOutput');
+    showToast(copyStatusMessage(status, 'Đã sao chép link gốc để chỉnh sửa.'));
   }
 
   async function copyPersonalLink() {
-    const copied = await copyText($('#shareLinkOutput').value);
-    showToast(copied ? 'Đã sao chép link riêng của bạn.' : 'Chưa xác nhận được sao chép. Link đã được chọn; hãy nhấn giữ để sao chép thủ công.');
+    const status = await copyText($('#shareLinkOutput').value);
+    showToast(copyStatusMessage(status, 'Đã sao chép link riêng của bạn.'));
   }
 
   async function sendPersonalLink() {
@@ -674,8 +688,8 @@
         console.warn('Không mở được bảng chia sẻ:', error);
       }
     }
-    const copied = await copyText(url);
-    showToast(copied ? 'Đã sao chép link người nhận.' : 'Chưa xác nhận được sao chép. Link đã được chọn; hãy nhấn giữ để sao chép thủ công.');
+    const status = await copyText(url, '#shareLinkOutput', false);
+    showToast(copyStatusMessage(status, 'Đã sao chép link người nhận.'));
   }
 
   async function handleSettingsSubmit(event) {
@@ -746,8 +760,8 @@
       try { await navigator.share(shareData); showToast('Đã mở bảng chia sẻ.'); return; }
       catch (error) { if (error.name === 'AbortError') return; console.warn('Không mở được bảng chia sẻ:', error); }
     }
-    const copied = await copyText(url);
-    showToast(copied ? 'Đã sao chép link riêng của thiệp.' : 'Chưa xác nhận được sao chép. Link đã được chọn; hãy nhấn giữ để sao chép thủ công.');
+    const status = await copyText(url, '#shareLinkOutput', false);
+    showToast(copyStatusMessage(status, 'Đã sao chép link riêng của thiệp.'));
   }
 
   function toggleMusic() {
