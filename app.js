@@ -55,8 +55,12 @@
   }
 
   function isRecipientViewRequested() {
-    return new URLSearchParams(window.location.search).get('view') === 'recipient'
-      || new URLSearchParams(window.location.hash.slice(1)).get('view') === 'recipient';
+    const query = new URLSearchParams(window.location.search);
+    const hash = new URLSearchParams(window.location.hash.slice(1));
+    return query.get('view') === 'recipient'
+      || hash.get('view') === 'recipient'
+      || query.has('sid')
+      || hash.has('sid');
   }
 
   function embeddedBrowserName() {
