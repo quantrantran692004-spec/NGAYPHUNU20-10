@@ -195,5 +195,10 @@
     <script src="./supabase-config.js"></script>
     <script src="./config.js?v=config-text-custom-v3"></script>
     <script src="./app.js?v=recipient-cache-bust-root-isolated-v38"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js?v=gift-pages-v39', { updateViaCache: 'none' }).catch(() => {}));
+      }
+    </script>
   </body>
 </html>
