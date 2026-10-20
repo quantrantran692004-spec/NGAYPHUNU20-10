@@ -2,13 +2,13 @@
   'use strict';
 
   const defaults = structuredClone(window.GIFT_CONFIG || {});
-  const storageKey = 'thiep2010-personalization-v1';
   const app = document.querySelector('#app');
   const state = {
     screen: 'cover',
     config: loadConfig(),
     shareId: window.location.hash.match(/(?:^#|&)sid=([^&]+)/)?.[1] || '',
     shareUrl: '',
+    isSharing: false,
     recipientView: false,
     photoProcessing: Promise.resolve(),
     isDirty: false,
@@ -30,8 +30,9 @@
     try {
       const shared = readSharedConfig();
       if (shared) return mergeConfig(defaults, shared);
-      const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
-      return saved ? mergeConfig(defaults, saved) : mergeConfig(defaults, {});
+      // The repository/root URL is the reusable original gift. Only a link
+      // with an embedded #gift payload gets personalized recipient settings.
+      return mergeConfig(defaults, {});
     } catch (error) {
       console.warn('Không đọc được cấu hình lưu cục bộ:', error);
       return mergeConfig(defaults, {});
@@ -70,17 +71,6 @@
       ...patch,
       photos: Array.isArray(patch.photos) ? patch.photos : (base.photos || [])
     };
-  }
-
-  function persistConfig() {
-    try {
-      const serializable = { ...state.config, photos: state.config.photos.map(({ src, caption, note, fit, position }) => ({ src, caption, note, fit, position })) };
-      localStorage.setItem(storageKey, JSON.stringify(serializable));
-      return true;
-    } catch (error) {
-      console.warn('Không lưu được cấu hình cục bộ:', error);
-      return false;
-    }
   }
 
   function showToast(message) {
@@ -671,20 +661,31 @@
     showToast(copyStatusMessage(status, 'Đã sao chép link gửi người nhận.'));
   }
 
-  function sendPersonalLink() {
+  async function sendPersonalLink() {
+    if (state.isSharing) {
+      showToast('Bảng chia sẻ đang mở. Hãy đóng bảng đó rồi thử gửi lại.');
+      return;
+    }
     const url = $('#shareLinkOutput').value || createShareLink();
     if (!navigator.share) {
       showToast('Trình duyệt này không hỗ trợ bảng chọn ứng dụng. Hãy mở thiệp bằng Safari hoặc Chrome trên điện thoại.');
       return;
     }
+    const button = $('#sendShareLink');
+    state.isSharing = true;
+    button.disabled = true;
     try {
       // Keep payload minimal: the URL itself already contains the whole gift config.
-      const sharing = navigator.share({ title: `Thiệp 20/10 gửi ${state.config.recipient}`, url });
+      await navigator.share({ title: `Thiệp 20/10 gửi ${state.config.recipient}`, url });
       showToast('Đã mở bảng ứng dụng. Chọn Zalo, Facebook, Messenger hoặc ứng dụng muốn gửi.');
-      sharing.catch((error) => { if (error.name !== 'AbortError') { console.warn('Không mở được bảng ứng dụng:', error); showToast('Điện thoại không mở được bảng ứng dụng chia sẻ.'); } });
     } catch (error) {
-      console.warn('Không mở được bảng ứng dụng:', error);
-      showToast('Điện thoại không mở được bảng ứng dụng chia sẻ.');
+      if (error.name !== 'AbortError') {
+        console.warn('Không mở được bảng ứng dụng:', error);
+        showToast('Điện thoại không mở được bảng chia sẻ. Hãy thử lại hoặc dùng “Sao chép link này”.');
+      }
+    } finally {
+      state.isSharing = false;
+      button.disabled = false;
     }
   }
 
@@ -711,7 +712,6 @@
       if (!musicFile.type || musicFile.type.startsWith('audio/')) state.config.music = await readFileAsDataUrl(musicFile);
       else showToast('Nhạc nền cần là một tệp âm thanh.');
     }
-    const locallyPersisted = persistConfig();
     setAudioSource(state.config.music);
     applyBackground(state.config.background);
     prepareBloom();
@@ -723,7 +723,7 @@
     createShareLink(true);
     $('#settingsPanel').classList.add('is-link-only');
     app.classList.add('is-link-result');
-    showToast(locallyPersisted ? 'Đã lưu nội dung và tạo link mới.' : 'Đã tạo link mới; bộ nhớ cục bộ đầy nên hãy sao chép link gốc để giữ bản chỉnh sửa.');
+    showToast('Đã lưu cấu hình và tạo link gửi mới. Link gốc vẫn giữ cấu hình ban đầu.');
     $('#shareResult').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     } catch (error) {
       console.error('Không lưu được thiệp:', error);
@@ -738,7 +738,6 @@
     state.config = mergeConfig(defaults, {});
     state.isDirty = true;
     $('#backgroundInput').value = ''; $('#musicInput').value = ''; $('#photosInput').value = '';
-    persistConfig();
     setAudioSource(''); applyBackground(''); fillForm(); prepareBloom(); updateMediaStatus(); markShareDirty();
     showToast('Đã khôi phục nội dung mẫu.');
   }
@@ -789,7 +788,11 @@
     });
     $('#openGift').addEventListener('click', () => {
       const audio = $('#bgMusic');
-      if (audio.src) audio.play().catch(() => showToast('Chạm nút nhạc ♫ để phát nếu điện thoại vẫn chặn tự động.'));
+      if (audio.src) {
+        audio.play()
+          .then(() => { $('#musicToggle').classList.add('is-on'); $('#musicToggle').setAttribute('aria-label', 'Tắt nhạc'); })
+          .catch((error) => { console.warn('Không phát được nhạc khi mở quà:', error); showToast('Điện thoại đã chặn nhạc. Hãy chạm nút ♫ ở góc trên để thử phát.'); });
+      }
       beginBloom();
     });
     $('#readLetter').addEventListener('click', openLetter);
