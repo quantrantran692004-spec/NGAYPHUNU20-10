@@ -758,6 +758,29 @@
     if (status === 'manual') showCopyFallback(url);
   }
 
+  function openDeviceShare() {
+    const url = $('#shareLinkOutput').value || createShareLink();
+    if (!navigator.share) {
+      showCopyFallback(url);
+      $('#copyFallbackHelp').textContent = 'Trình duyệt này không hỗ trợ bảng chia sẻ. Hãy thử clipboard hoặc chọn link để sao chép thủ công.';
+      return;
+    }
+    try {
+      // Call immediately from this click so mobile browsers retain user activation.
+      const sharePromise = navigator.share({ title: 'Link thiệp 20/10', url });
+      showToast('Đã mở bảng chia sẻ. Chọn “Sao chép” để lưu link.');
+      sharePromise.catch((error) => {
+        if (error.name !== 'AbortError') {
+          console.warn('Không mở được bảng chia sẻ:', error);
+          showCopyFallback(url);
+        }
+      });
+    } catch (error) {
+      console.warn('Không mở được bảng chia sẻ:', error);
+      showCopyFallback(url);
+    }
+  }
+
   async function handleSettingsSubmit(event) {
     event.preventDefault();
     if (state.recipientView) return;
@@ -891,6 +914,7 @@
     $('#copyOwnerLink').addEventListener('click', copyOwnerLink);
     $('#copyShareLink').addEventListener('click', copyPersonalLink);
     $('#sendShareLink').addEventListener('click', sendPersonalLink);
+    $('#openDeviceShare').addEventListener('click', openDeviceShare);
     $('#closeCopyFallback').addEventListener('click', () => { $('#copyFallback').hidden = true; });
     $('#retryClipboard').addEventListener('click', retryClipboardCopy);
     $('#openFallbackShare').addEventListener('click', openFallbackShare);
