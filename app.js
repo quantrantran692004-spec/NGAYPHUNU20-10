@@ -20,12 +20,32 @@
 
   function loadConfig() {
     try {
+      const shared = readSharedConfig();
+      if (shared) return mergeConfig(defaults, shared);
       const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
       return saved ? mergeConfig(defaults, saved) : mergeConfig(defaults, {});
     } catch (error) {
       console.warn('Không đọc được cấu hình lưu cục bộ:', error);
       return mergeConfig(defaults, {});
     }
+  }
+
+  function readSharedConfig() {
+    const match = window.location.hash.match(/(?:^#|&)gift=([^&]+)/);
+    if (!match) return null;
+    try {
+      let raw = match[1].replace(/-/g, '+').replace(/_/g, '/');
+      raw += '='.repeat((4 - raw.length % 4) % 4);
+      return JSON.parse(decodeURIComponent(escape(atob(raw))));
+    } catch (error) {
+      console.warn('Link thiệp không hợp lệ:', error);
+      return null;
+    }
+  }
+
+  function encodeSharedConfig(config) {
+    const json = JSON.stringify(config);
+    return btoa(unescape(encodeURIComponent(json))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
   }
 
   function mergeConfig(base, patch) {
@@ -79,7 +99,7 @@
 
   function bouquetMarkup(className = 'bouquet-flowers') {
     const positions = [
-      [-91, 92, .68, -22, -8], [-55, 125, .78, -15, -5], [-22, 153, .88, -7, -2], [17, 161, .93, 4, 2], [54, 135, .79, 15, 5], [91, 92, .67, 23, 8], [-65, 57, .66, -24, -10], [-31, 89, .82, -12, -5], [3, 103, .92, 2, 0], [39, 87, .8, 14, 5], [68, 53, .64, 25, 10]
+      [-112, 84, .7, -24, -9], [-82, 123, .82, -17, -6], [-52, 157, .9, -11, -3], [-18, 178, 1, -5, -1], [18, 180, 1, 4, 2], [54, 157, .9, 11, 4], [84, 123, .82, 18, 7], [112, 84, .7, 25, 10], [-70, 73, .73, -18, -6], [-35, 111, .88, -8, -2], [4, 132, .96, 1, 0], [43, 111, .88, 9, 3], [72, 72, .72, 18, 7], [0, 204, .72, 0, 0]
     ];
     return positions.map(([x, y, s, r, stemR], index) => `<div class="bouquet-flower" style="--x:${x}px;--y:${y}px;--s:${s};--r:${r}deg;--stem-r:${stemR}deg;--delay:${index * .18 + .1}s">${flowerMarkup()}</div>`).join('');
   }
@@ -255,10 +275,12 @@
   }
 
   async function shareCard() {
-    const shareData = { title: 'Một món quà 20/10', text: `Một món quà dành cho ${state.config.recipient}`, url: window.location.href };
+    const url = `${window.location.origin}${window.location.pathname}#gift=${encodeSharedConfig(state.config)}`;
+    if (url.length > 1800000) showToast('Link rất dài vì có ảnh/nhạc nhúng; nên đặt file vào assets/ để link nhẹ hơn.');
+    const shareData = { title: 'Một món quà 20/10', text: `Một món quà dành cho ${state.config.recipient}`, url };
     try {
-      if (navigator.share) { await navigator.share(shareData); } else { await navigator.clipboard.writeText(window.location.href); showToast('Đã copy link thiệp.'); }
-    } catch (error) { if (error.name !== 'AbortError') showToast('Hãy copy link trên thanh địa chỉ để gửi nhé.'); }
+      if (navigator.share) { await navigator.share(shareData); showToast('Đã tạo link riêng cho người nhận.'); } else { await navigator.clipboard.writeText(url); showToast('Đã copy link riêng của thiệp.'); }
+    } catch (error) { if (error.name !== 'AbortError') { await navigator.clipboard?.writeText(url); showToast('Đã copy link riêng của thiệp.'); } }
   }
 
   function toggleMusic() {

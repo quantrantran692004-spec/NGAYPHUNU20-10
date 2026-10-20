@@ -20,7 +20,9 @@
         <div class="moon"></div>
         <div class="shooting-star shooting-star--one"></div>
         <div class="shooting-star shooting-star--two"></div>
-        <div class="mountains"></div>
+        <div class="shooting-star shooting-star--three"></div>
+        <div class="shooting-star shooting-star--four"></div>
+        <div class="shooting-star shooting-star--five"></div>
         <div class="meadow"><span></span><span></span><span></span><span></span><span></span></div>
         <div id="petals" class="petals"></div>
       </div>
@@ -49,7 +51,6 @@
 
       <section id="scene-bloom" class="scene scene--bloom" data-scene="bloom" hidden>
         <div class="bloom-copy">
-          <p class="eyebrow">GỬI NGƯỜI ANH THƯƠNG</p>
           <h2 id="bloomTitle">Happy Vietnamese<br /><em>Women’s Day 20/10</em></h2>
           <p id="bloomGreeting" class="bloom-greeting"></p>
         </div>
@@ -60,6 +61,7 @@
           <div class="tulip tulip--single"><i></i><i></i><i></i><i></i><i></i></div>
           <div class="flower-glow"></div>
         </div>
+        <div class="bouquet-paper bouquet-paper--bloom" aria-hidden="true"></div>
         <div id="bouquetFlowers" class="bouquet-flowers" aria-label="Bó hoa tulip"></div>
         <div id="bloomActions" class="bloom-actions" hidden>
           <button id="readLetter" class="primary-button" type="button">Mở lá thư của anh <span>→</span></button>
@@ -106,7 +108,7 @@
           <div><p class="eyebrow">CÁ NHÂN HÓA MÓN QUÀ</p><h2 id="settingsHeading">Chỉnh thiệp của hai mình</h2></div>
           <button id="closeSettings" class="close-button" type="button" aria-label="Đóng phần cá nhân hóa">×</button>
         </div>
-        <p class="settings-note">Nền đêm xanh trong ảnh mẫu được giữ nguyên. Các thay đổi tạm thời được lưu trên trình duyệt này. Muốn người yêu thấy ảnh/nhạc khi mở link GitHub Pages, hãy đặt file vào <code>assets/</code> và cập nhật <code>config.js</code>.</p>
+        <p class="settings-note">Mỗi người có thể tự đổi ảnh, nhạc và lời chúc. Bấm <b>Chia sẻ thiệp</b> để tạo link riêng chứa nội dung đã sửa; file lớn nên đặt trong <code>assets/</code> để link nhẹ hơn.</p>
         <form id="settingsForm" class="settings-form">
           <label>Người nhận<input id="recipientInput" name="recipient" type="text" placeholder="Ví dụ: Em yêu" /></label>
           <label>Tên người gửi<input id="senderInput" name="sender" type="text" placeholder="Ví dụ: Anh" /></label>
@@ -128,6 +130,6 @@
       <div id="toast" class="toast" role="status" aria-live="polite"></div>
     </main>
     <script src="./config.js"></script>
-    <script src="./app.js"></script>
+    <script src="./app.js?v=share-links-v2"></script>
   </body>
 </html>

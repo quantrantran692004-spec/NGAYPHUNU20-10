@@ -294,3 +294,49 @@ button { cursor: pointer; }
 }
 .single-flower-wrap { animation: stemBreath 4.4s ease-in-out infinite; }
 @keyframes stemBreath { 0%,100% { margin-left: 0; } 50% { margin-left: 2px; } }
+
+/* REFERENCE MATCH: không núi, chiều sâu đến từ các lớp cỏ và sương xanh */
+.mountains { display: none !important; }
+.meadow {
+  bottom: -8%;
+  height: 48%;
+  clip-path: none;
+  background:
+    radial-gradient(ellipse at 50% 18%, rgba(33,142,202,.34), transparent 42%),
+    linear-gradient(180deg, rgba(8,85,160,.08) 0%, rgba(4,54,124,.44) 26%, #031754 58%, #02103e 100%);
+}
+.meadow::before {
+  inset: 7% -15% -12%;
+  opacity: .72;
+  background:
+    repeating-linear-gradient(76deg, transparent 0 10px, rgba(94,196,224,.28) 11px 12px, transparent 13px 22px),
+    repeating-linear-gradient(103deg, transparent 0 16px, rgba(71,169,204,.2) 17px 18px, transparent 19px 31px);
+  transform: perspective(140px) rotateX(25deg) skewY(-7deg);
+}
+.meadow::after {
+  inset: 23% -15% -10%;
+  opacity: .5;
+  background:
+    repeating-linear-gradient(84deg, transparent 0 13px, rgba(150,227,235,.18) 14px 15px, transparent 16px 28px),
+    linear-gradient(180deg, transparent, rgba(0,13,57,.7));
+  transform: perspective(130px) rotateX(30deg) skewY(7deg) scaleX(-1);
+}
+.shooting-star--three { top: 15%; left: 18%; animation-delay: 1.1s; animation-duration: 7.2s; transform: rotate(-29deg) scale(.58); }
+.shooting-star--four { top: 34%; left: 74%; animation-delay: 3.8s; animation-duration: 8.1s; transform: rotate(-37deg) scale(.72); }
+.shooting-star--five { top: 48%; left: 30%; animation-delay: 6.2s; animation-duration: 9.5s; transform: rotate(-26deg) scale(.48); }
+.scene--bloom .bloom-copy { top: 11%; opacity: .72; }
+.scene--bloom .bloom-copy h2 { font-size: clamp(23px, 7vw, 33px); text-shadow: 0 0 22px rgba(125,225,255,.62); }
+.scene--bloom .bloom-greeting { color: rgba(244,252,255,.9); text-shadow: 0 0 12px rgba(83,203,255,.62); }
+.bouquet-flowers { width: 330px; height: 285px; bottom: 24%; }
+.bouquet-paper { width: 192px; height: 158px; }
+.bouquet-flower::after { height: 146px; }
+@media (max-width: 360px) { .bouquet-flowers { transform: translateX(-50%) scale(.9); } }
+/* Khi chụp riêng cảnh hoa, chỉ còn nội dung mẫu, không còn nhãn điều khiển thừa. */
+.scene--bloom .bloom-actions { opacity: .9; }
+
+.bouquet-paper--bloom { z-index: 2; bottom: 7%; }
+.scene--bloom .bouquet-flowers { z-index: 4; }
+.scene--bloom.is-bouquet .bouquet-paper--bloom { animation: paperReveal .9s .45s var(--ease) both; }
+@keyframes paperReveal { from { opacity: 0; transform: translateX(-50%) translateY(22px) scale(.8); } to { opacity: 1; transform: translateX(-50%) perspective(160px) rotateX(-8deg) scale(1); } }
+.meadow::before { opacity: .52; }
+.meadow::after { opacity: .34; }
