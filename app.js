@@ -517,6 +517,13 @@
     audio.load();
   }
 
+  function syncMusicButton(isPlaying) {
+    const button = $('#musicToggle');
+    if (!button) return;
+    button.classList.toggle('is-on', Boolean(isPlaying));
+    button.setAttribute('aria-label', isPlaying ? 'Tắt nhạc' : 'Bật nhạc');
+  }
+
   function applyBackground(src) {
     const background = $('#customBackground');
     if (state.backgroundUrl) URL.revokeObjectURL(state.backgroundUrl);
@@ -905,7 +912,7 @@
       const audio = $('#bgMusic');
       if (audio.src) {
         audio.play()
-          .then(() => { $('#musicToggle').classList.add('is-on'); $('#musicToggle').setAttribute('aria-label', 'Tắt nhạc'); })
+          .then(() => syncMusicButton(true))
           .catch((error) => { console.warn('Không phát được nhạc khi mở quà:', error); showToast('Điện thoại đã chặn nhạc. Hãy chạm nút ♫ ở góc trên để thử phát.'); });
       }
       beginBloom();
@@ -914,6 +921,9 @@
     $('#closeLetter').addEventListener('click', () => setScreen('bloom'));
     $('#continueToAlbum').addEventListener('click', startFade);
     $('#musicToggle').addEventListener('click', toggleMusic);
+    $('#bgMusic').addEventListener('play', () => syncMusicButton(true));
+    $('#bgMusic').addEventListener('pause', () => syncMusicButton(false));
+    $('#bgMusic').addEventListener('error', () => { syncMusicButton(false); if ($('#bgMusic').src) showToast('Không phát được file nhạc này trên trình duyệt hiện tại. Hãy dùng MP3.'); });
     $('#settingsToggle').addEventListener('click', openSettings);
     $('#closeSettings').addEventListener('click', closeSettings);
     $('#settingsScrim').addEventListener('click', closeSettings);
