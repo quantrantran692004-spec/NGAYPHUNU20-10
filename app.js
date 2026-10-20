@@ -59,6 +59,33 @@
       || new URLSearchParams(window.location.hash.slice(1)).get('view') === 'recipient';
   }
 
+  function embeddedBrowserName() {
+    const ua = navigator.userAgent || '';
+    if (/Instagram/i.test(ua)) return 'Instagram';
+    if (/FBAN|FBAV|FB_IAB|FB4A|FB4i|Messenger/i.test(ua)) return 'Facebook/Messenger';
+    if (/Zalo/i.test(ua)) return 'Zalo';
+    return '';
+  }
+
+  function setupEmbeddedBrowserNotice() {
+    const notice = $('#embeddedBrowserNotice');
+    const button = $('#openExternalBrowser');
+    const name = embeddedBrowserName();
+    if (!notice || !button || !state.recipientView || !name) return;
+    $('#embeddedBrowserText').textContent = `Bạn đang mở từ ${name}. Mở Safari/Chrome để xem đủ tính năng và phát nhạc ổn định hơn.`;
+    notice.hidden = false;
+    button.addEventListener('click', () => {
+      const ua = navigator.userAgent || '';
+      if (/Android/i.test(ua)) {
+        const target = `${window.location.host}${window.location.pathname}${window.location.search}${window.location.hash}`;
+        window.location.href = `intent://${target}#Intent;scheme=https;end`;
+        setTimeout(() => showToast('Nếu chưa mở trình duyệt, hãy chọn menu ⋯ rồi chọn Mở bằng trình duyệt.'), 900);
+      } else {
+        showToast('Hãy chạm menu ⋯ của ứng dụng rồi chọn Mở bằng Safari hoặc trình duyệt. iPhone không cho website tự ép thoát khỏi ứng dụng.');
+      }
+    }, { once: true });
+  }
+
   function createShareId() {
     return window.crypto?.randomUUID?.() || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
   }
@@ -561,6 +588,7 @@
     if (state.recipientView) {
       closeSettings();
       $('#shareResult').hidden = true;
+      setupEmbeddedBrowserNotice();
     }
   }
 

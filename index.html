@@ -52,6 +52,10 @@
       </div>
       <div id="customBackground" class="custom-background" aria-hidden="true"></div>
       <audio id="bgMusic" loop preload="auto" playsinline></audio>
+      <aside id="embeddedBrowserNotice" class="embedded-browser-notice" hidden aria-live="polite">
+        <div><strong>Mở thiệp bằng trình duyệt</strong><span id="embeddedBrowserText">Để xem đầy đủ tính năng, hãy mở bằng Safari hoặc Chrome.</span></div>
+        <button id="openExternalBrowser" type="button">Mở trình duyệt</button>
+      </aside>
 
       <header class="topbar">
         <div class="brand-mark" aria-label="Thiệp 20/10">20<span>/</span>10</div>
@@ -176,6 +180,6 @@
     </main>
     <script src="./supabase-config.js"></script>
     <script src="./config.js"></script>
-    <script src="./app.js?v=recipient-cache-bust-storage-v30"></script>
+    <script src="./app.js?v=recipient-cache-bust-browser-v31"></script>
   </body>
 </html>

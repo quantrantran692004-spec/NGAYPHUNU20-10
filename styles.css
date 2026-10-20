@@ -45,6 +45,13 @@ button { cursor: pointer; }
 .brand-mark { color: #e1f8ff; font: 600 17px Fraunces, serif; letter-spacing: .08em; text-shadow: 0 0 11px #7cdcff; }
 .brand-mark span { color: #f4a9c8; }
 .topbar-actions { display: flex; gap: 8px; }
+.embedded-browser-notice { position: absolute; top: max(62px, calc(env(safe-area-inset-top) + 54px)); left: 12px; right: 12px; z-index: 35; display: flex; align-items: center; gap: 10px; padding: 10px 11px; border: 1px solid rgba(255,221,238,.45); border-radius: 14px; color: #fff7fb; background: rgba(9,28,91,.94); box-shadow: 0 8px 26px rgba(0,0,0,.28); font-size: 10px; line-height: 1.25; }
+.embedded-browser-notice[hidden] { display: none; }
+.embedded-browser-notice div { min-width: 0; flex: 1; }
+.embedded-browser-notice strong, .embedded-browser-notice span { display: block; }
+.embedded-browser-notice strong { color: #ffd5e7; font-size: 11px; }
+.embedded-browser-notice span { margin-top: 3px; color: rgba(239,248,255,.82); }
+.embedded-browser-notice button { flex: none; border: 0; border-radius: 999px; padding: 8px 10px; color: #34132a; background: #ffd3e5; font-size: 10px; font-weight: 800; }
 .icon-button, .close-button { width: 36px; height: 36px; border: 1px solid rgba(219,247,255,.35); border-radius: 50%; color: #effcff; background: rgba(12,62,155,.42); box-shadow: 0 0 12px rgba(118,219,255,.15); transition: transform .2s ease, background .2s ease; }
 .icon-button:hover, .close-button:hover { transform: scale(1.06); background: rgba(75,137,218,.64); }
 .icon-button.is-on { color: #ffd9e8; border-color: #ffafd0; box-shadow: 0 0 15px rgba(255,158,203,.68); }
