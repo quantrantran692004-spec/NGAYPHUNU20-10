@@ -11,6 +11,22 @@ window.GIFT_CONFIG = {
   title: "Happy Vietnamese Women's Day 20/10",
   greeting: "Cảm ơn em vì đã làm những ngày bình thường của anh trở nên thật đặc biệt.",
   letter: "Em à,\n\nNgày 20/10 này anh chỉ muốn nói rằng anh thật may mắn vì có em bên cạnh. Cảm ơn em vì nụ cười, sự dịu dàng và những điều nhỏ xíu em mang đến cho cuộc sống của anh.\n\nMong em luôn vui, luôn xinh đẹp và luôn nhớ rằng anh thương em rất nhiều.",
+  texts: {
+    brand: "20/10",
+    coverEyebrow: "MỘT ĐIỀU NHỎ ANH MUỐN TẶNG EM",
+    coverHint: "Chạm vào ánh sáng\nđể mở món quà này",
+    bloomButton: "Mở lá thư của Minh",
+    letterEyebrow: "MỘT LÁ THƯ NHỎ",
+    letterHeading: "Gửi {{recipient}}",
+    signaturePrefix: "Thương {{recipient}} thật nhiều,",
+    continueButton: "Đi tiếp cùng Minh",
+    fadeText: "Những kỷ niệm của chúng mình\nvẫn còn ở phía trước...",
+    galleryEyebrow: "MỘT ĐOẠN ĐƯỜNG CÓ {{recipient}}",
+    galleryHeading: "Vẫn gần {{recipient}},\ndù xa cách",
+    galleryHint: "Chạm vào ✦ để chỉnh ảnh, nhạc và lời chúc",
+    restartButton: "Xem lại từ đầu",
+    shareButton: "Chia sẻ thiệp"
+  },
   background: "",
   music: "",
   photos: [

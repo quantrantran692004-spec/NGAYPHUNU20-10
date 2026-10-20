@@ -181,8 +181,21 @@
     return {
       ...base,
       ...patch,
+      texts: { ...(base.texts || {}), ...(patch.texts || {}) },
       photos: Array.isArray(patch.photos) ? patch.photos : (base.photos || [])
     };
+  }
+
+  function uiText(key, fallback = '') {
+    const value = state.config.texts?.[key] ?? defaults.texts?.[key] ?? fallback;
+    return String(value).replace(/\{\{recipient\}\}/g, state.config.recipient || '').replace(/\{\{sender\}\}/g, state.config.sender || '');
+  }
+
+  function setUiText(selector, value, html = false) {
+    const element = $(selector);
+    if (!element) return;
+    if (html) element.innerHTML = escapeHtml(value).replace(/\r?\n/g, '<br />');
+    else element.textContent = value;
   }
 
   function showToast(message) {
@@ -281,13 +294,24 @@
     const coverTitleMarkup = configuredTitle === "Happy Vietnamese Women's Day 20/10"
       ? "Happy Vietnamese<br /><em>Women's Day</em> <strong>20/10</strong>"
       : escapeHtml(configuredTitle).replace(/20\/10/g, '<strong>20/10</strong>').replace(/\r?\n/g, '<br />');
+    setUiText('#brandMark', uiText('brand', '20/10'));
+    setUiText('#coverEyebrow', uiText('coverEyebrow'), true);
+    setUiText('#coverHint', uiText('coverHint'), true);
     $('#coverTitle').innerHTML = coverTitleMarkup;
     $('#bloomGreeting').textContent = state.config.greeting;
     $('#bloomTitle').innerHTML = `${escapeHtml(state.config.title).replace('20/10', '<em>20/10</em>')}`;
-    $('#letterHeading').textContent = `Gửi ${state.config.recipient}`;
+    setUiText('#readLetterText', uiText('bloomButton'));
+    setUiText('#letterEyebrow', uiText('letterEyebrow'));
+    setUiText('#letterHeading', uiText('letterHeading'));
     $('#letterBody').textContent = state.config.letter;
-    $('#letterSignature').innerHTML = `Thương ${escapeHtml(state.config.recipient)} thật nhiều,<br /><strong>${escapeHtml(state.config.sender)}</strong>`;
-    $('#galleryHeading').innerHTML = `Vẫn gần ${escapeHtml(state.config.recipient)},<br /><em>dù xa cách</em>`;
+    $('#letterSignature').innerHTML = `${escapeHtml(uiText('signaturePrefix'))}<br /><strong>${escapeHtml(state.config.sender)}</strong>`;
+    setUiText('#continueButtonText', uiText('continueButton'));
+    setUiText('#fadeText', uiText('fadeText'), true);
+    setUiText('#galleryEyebrow', uiText('galleryEyebrow'), true);
+    setUiText('#galleryHeading', uiText('galleryHeading'), true);
+    setUiText('#galleryHint', uiText('galleryHint'));
+    setUiText('#restartButtonText', uiText('restartButton'));
+    setUiText('#shareButtonText', uiText('shareButton'));
   }
 
   function beginBloom() {
@@ -601,6 +625,14 @@
     $('#titleInput').value = state.config.title || '';
     $('#greetingInput').value = state.config.greeting || '';
     $('#letterInput').value = state.config.letter || '';
+    const texts = state.config.texts || {};
+    Object.entries({
+      textBrandInput: 'brand', textCoverEyebrowInput: 'coverEyebrow', textCoverHintInput: 'coverHint',
+      textBloomButtonInput: 'bloomButton', textLetterEyebrowInput: 'letterEyebrow', textLetterHeadingInput: 'letterHeading',
+      textSignaturePrefixInput: 'signaturePrefix', textContinueButtonInput: 'continueButton', textFadeTextInput: 'fadeText',
+      textGalleryEyebrowInput: 'galleryEyebrow', textGalleryHeadingInput: 'galleryHeading', textGalleryHintInput: 'galleryHint',
+      textRestartButtonInput: 'restartButton', textShareButtonInput: 'shareButton'
+    }).forEach(([id, key]) => { const input = $(`#${id}`); if (input) input.value = texts[key] || defaults.texts?.[key] || ''; });
     renderPhotoList();
     updateMediaStatus();
   }
@@ -841,6 +873,17 @@
     state.config.title = $('#titleInput').value.trim() || defaults.title;
     state.config.greeting = $('#greetingInput').value.trim() || defaults.greeting;
     state.config.letter = $('#letterInput').value.trim() || defaults.letter;
+    state.config.texts = { ...(defaults.texts || {}), ...(state.config.texts || {}) };
+    Object.entries({
+      textBrandInput: 'brand', textCoverEyebrowInput: 'coverEyebrow', textCoverHintInput: 'coverHint',
+      textBloomButtonInput: 'bloomButton', textLetterEyebrowInput: 'letterEyebrow', textLetterHeadingInput: 'letterHeading',
+      textSignaturePrefixInput: 'signaturePrefix', textContinueButtonInput: 'continueButton', textFadeTextInput: 'fadeText',
+      textGalleryEyebrowInput: 'galleryEyebrow', textGalleryHeadingInput: 'galleryHeading', textGalleryHintInput: 'galleryHint',
+      textRestartButtonInput: 'restartButton', textShareButtonInput: 'shareButton'
+    }).forEach(([id, key]) => {
+      const input = $(`#${id}`);
+      if (input) state.config.texts[key] = input.value.trim() || defaults.texts[key];
+    });
     const backgroundFile = $('#backgroundInput').files[0];
     const musicFile = $('#musicInput').files[0];
     if (backgroundFile) {

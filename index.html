@@ -54,7 +54,7 @@
       <audio id="bgMusic" loop preload="auto" playsinline></audio>
 
       <header class="topbar">
-        <div class="brand-mark" aria-label="Thiệp 20/10">20<span>/</span>10</div>
+        <div id="brandMark" class="brand-mark" aria-label="Thiệp 20/10">20<span>/</span>10</div>
         <div class="topbar-actions">
           <button id="musicToggle" class="icon-button" type="button" aria-label="Bật nhạc" title="Bật/tắt nhạc">♫</button>
           <button id="settingsToggle" class="icon-button" type="button" aria-label="Mở phần cá nhân hóa" title="Cá nhân hóa">✦</button>
@@ -63,13 +63,13 @@
 
       <section id="scene-cover" class="scene scene--cover is-active" data-scene="cover">
         <div class="cover-content">
-          <p class="eyebrow">MỘT ĐIỀU NHỎ ANH MUỐN TẶNG EM</p>
+          <p id="coverEyebrow" class="eyebrow">MỘT ĐIỀU NHỎ ANH MUỐN TẶNG EM</p>
           <h1 id="coverTitle">Happy Vietnamese<br /><em>Women’s Day</em> <strong>20/10</strong></h1>
           <button id="openGift" class="orb-button" type="button" aria-label="Chạm để mở quà">
             <span class="orb-button__halo"></span>
             <span class="orb-button__core">♡</span>
           </button>
-          <p class="tap-hint">Chạm vào ánh sáng<br /><span>để mở món quà này</span></p>
+          <p id="coverHint" class="tap-hint">Chạm vào ánh sáng<br /><span>để mở món quà này</span></p>
         </div>
       </section>
 
@@ -88,7 +88,7 @@
         <div class="bouquet-paper bouquet-paper--bloom" aria-hidden="true"></div>
         <div id="bouquetFlowers" class="bouquet-flowers" aria-label="Bó hoa tulip"></div>
         <div id="bloomActions" class="bloom-actions" hidden>
-          <button id="readLetter" class="primary-button" type="button">Mở lá thư của Minh <span>→</span></button>
+          <button id="readLetter" class="primary-button" type="button"><span id="readLetterText">Mở lá thư của Minh</span> <span>→</span></button>
         </div>
       </section>
 
@@ -97,16 +97,16 @@
         <article class="letter-card" role="dialog" aria-modal="true" aria-labelledby="letterHeading">
           <button id="closeLetter" class="close-button" type="button" aria-label="Đóng lá thư">×</button>
           <div class="letter-seal">♡</div>
-          <p class="eyebrow">MỘT LÁ THƯ NHỎ</p>
+          <p id="letterEyebrow" class="eyebrow">MỘT LÁ THƯ NHỎ</p>
           <h2 id="letterHeading">Gửi em, người anh yêu</h2>
           <div id="letterBody" class="letter-body"></div>
           <p id="letterSignature" class="letter-signature">Thương chị em phụ nữ thật nhiều,<br /><strong>MINH</strong></p>
         </article>
-        <button id="continueToAlbum" class="primary-button" type="button">Đi tiếp cùng Minh <span>→</span></button>
+        <button id="continueToAlbum" class="primary-button" type="button"><span id="continueButtonText">Đi tiếp cùng Minh</span> <span>→</span></button>
       </section>
 
       <section id="scene-fade" class="scene scene--fade" data-scene="fade" hidden>
-        <div class="fade-copy"><p>Những kỷ niệm của chúng mình<br /><em>vẫn còn ở phía trước...</em></p></div>
+        <div class="fade-copy"><p id="fadeText">Những kỷ niệm của chúng mình<br /><em>vẫn còn ở phía trước...</em></p></div>
         <div class="fade-bouquet" aria-hidden="true">
           <div class="bouquet-paper"></div>
           <div class="fade-bouquet-flowers" id="fadeBouquetFlowers"></div>
@@ -116,14 +116,14 @@
 
       <section id="scene-gallery" class="scene scene--gallery" data-scene="gallery" hidden>
         <div class="gallery-intro">
-          <p class="eyebrow">MỘT ĐOẠN ĐƯỜNG CÓ CHỊ EM PHỤ NỮ</p>
+          <p id="galleryEyebrow" class="eyebrow">MỘT ĐOẠN ĐƯỜNG CÓ CHỊ EM PHỤ NỮ</p>
           <h2 id="galleryHeading">Vẫn gần chị em phụ nữ,<br /><em>dù xa cách</em></h2>
-          <p class="gallery-hint">Chạm vào ✦ để chỉnh ảnh, nhạc và lời chúc</p>
+          <p id="galleryHint" class="gallery-hint">Chạm vào ✦ để chỉnh ảnh, nhạc và lời chúc</p>
         </div>
         <div id="galleryTrack" class="gallery-track" aria-label="Album ảnh kỷ niệm"></div>
         <div class="gallery-bottom-actions">
-          <button id="restartButton" class="ghost-button" type="button">↺ Xem lại từ đầu</button>
-          <button id="shareButton" class="ghost-button" type="button">⌁ Chia sẻ thiệp</button>
+          <button id="restartButton" class="ghost-button" type="button">↺ <span id="restartButtonText">Xem lại từ đầu</span></button>
+          <button id="shareButton" class="ghost-button" type="button">⌁ <span id="shareButtonText">Chia sẻ thiệp</span></button>
         </div>
       </section>
 
@@ -139,6 +139,24 @@
           <label>Tiêu đề chính<textarea id="titleInput" name="title" rows="2"></textarea></label>
           <label>Lời chúc ngắn<textarea id="greetingInput" name="greeting" rows="3"></textarea></label>
           <label>Nội dung lá thư<textarea id="letterInput" name="letter" rows="7"></textarea></label>
+          <details class="text-customization">
+            <summary>Tùy chỉnh toàn bộ chữ trên thiệp</summary>
+            <p class="label-help">Dùng <code>{{recipient}}</code> và <code>{{sender}}</code> để tự động chèn tên người nhận/người gửi.</p>
+            <label>Tên trên góc thiệp<input id="textBrandInput" type="text" /></label>
+            <label>Dòng nhỏ ở bìa<textarea id="textCoverEyebrowInput" rows="2"></textarea></label>
+            <label>Gợi ý mở quà<textarea id="textCoverHintInput" rows="2"></textarea></label>
+            <label>Nút mở thư<input id="textBloomButtonInput" type="text" /></label>
+            <label>Dòng nhỏ trên thư<input id="textLetterEyebrowInput" type="text" /></label>
+            <label>Tiêu đề thư<input id="textLetterHeadingInput" type="text" /></label>
+            <label>Dòng ký tên<input id="textSignaturePrefixInput" type="text" /></label>
+            <label>Nút đi tiếp<input id="textContinueButtonInput" type="text" /></label>
+            <label>Chữ chuyển cảnh<textarea id="textFadeTextInput" rows="2"></textarea></label>
+            <label>Dòng nhỏ trên album<input id="textGalleryEyebrowInput" type="text" /></label>
+            <label>Tiêu đề album<textarea id="textGalleryHeadingInput" rows="2"></textarea></label>
+            <label>Gợi ý album<input id="textGalleryHintInput" type="text" /></label>
+            <label>Nút xem lại<input id="textRestartButtonInput" type="text" /></label>
+            <label>Nút chia sẻ<input id="textShareButtonInput" type="text" /></label>
+          </details>
           <div class="media-control">
             <label>Ảnh nền <span class="label-help">Chọn ảnh trong điện thoại</span><input id="backgroundInput" type="file" accept="image/*" /></label>
             <div class="media-control__footer"><span id="backgroundStatus" class="media-status"></span><button id="clearBackground" class="media-clear" type="button">Gỡ nền</button></div>
@@ -175,7 +193,7 @@
       <div id="toast" class="toast" role="status" aria-live="polite"></div>
     </main>
     <script src="./supabase-config.js"></script>
-    <script src="./config.js?v=config-default-v2"></script>
-    <script src="./app.js?v=recipient-cache-bust-ios-sid-v36"></script>
+    <script src="./config.js?v=config-text-custom-v3"></script>
+    <script src="./app.js?v=recipient-cache-bust-text-custom-v37"></script>
   </body>
 </html>
