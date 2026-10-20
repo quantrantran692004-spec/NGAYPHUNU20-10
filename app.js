@@ -730,14 +730,14 @@
 
   async function copyOwnerLink() {
     const text = $('#ownerLinkOutput').value;
-    const status = await copyText(text, '#ownerLinkOutput');
+    const status = await copyText(text, '#ownerLinkOutput', false);
     showToast(copyStatusMessage(status, 'Đã sao chép link gốc để chỉnh sửa.'));
     if (status === 'manual') showCopyFallback(text);
   }
 
   async function copyPersonalLink() {
     const text = $('#shareLinkOutput').value;
-    const status = await copyText(text);
+    const status = await copyText(text, '#shareLinkOutput', false);
     showToast(copyStatusMessage(status, 'Đã sao chép link riêng của bạn.'));
     if (status === 'manual') showCopyFallback(text);
   }
@@ -756,29 +756,6 @@
     const status = await copyText(url, '#shareLinkOutput', false);
     showToast(copyStatusMessage(status, 'Đã sao chép link người nhận.'));
     if (status === 'manual') showCopyFallback(url);
-  }
-
-  function openDeviceShare() {
-    const url = $('#shareLinkOutput').value || createShareLink();
-    if (!navigator.share) {
-      showCopyFallback(url);
-      $('#copyFallbackHelp').textContent = 'Trình duyệt này không hỗ trợ bảng chia sẻ. Hãy thử clipboard hoặc chọn link để sao chép thủ công.';
-      return;
-    }
-    try {
-      // Call immediately from this click so mobile browsers retain user activation.
-      const sharePromise = navigator.share({ title: 'Link thiệp 20/10', url });
-      showToast('Đã mở bảng chia sẻ; chưa xác nhận link đã được sao chép. Nếu điện thoại báo lỗi, dùng “Chọn link thủ công”.');
-      sharePromise.catch((error) => {
-        if (error.name !== 'AbortError') {
-          console.warn('Không mở được bảng chia sẻ:', error);
-          showCopyFallback(url);
-        }
-      });
-    } catch (error) {
-      console.warn('Không mở được bảng chia sẻ:', error);
-      showCopyFallback(url);
-    }
   }
 
   function openManualCopy() {
@@ -920,7 +897,6 @@
     $('#copyOwnerLink').addEventListener('click', copyOwnerLink);
     $('#copyShareLink').addEventListener('click', copyPersonalLink);
     $('#sendShareLink').addEventListener('click', sendPersonalLink);
-    $('#openDeviceShare').addEventListener('click', openDeviceShare);
     $('#openManualCopy').addEventListener('click', openManualCopy);
     $('#closeCopyFallback').addEventListener('click', () => { $('#copyFallback').hidden = true; });
     $('#retryClipboard').addEventListener('click', retryClipboardCopy);
