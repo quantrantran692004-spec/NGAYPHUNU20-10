@@ -17,7 +17,7 @@ Mở trang thiệp, chạm `✦` để sửa tên, lời chúc, thư, ảnh nề
 
 Ảnh vừa chọn sẽ hiện ngay trong danh sách để kiểm tra trước khi lưu. Mỗi ảnh có ô sửa chú thích/ghi chú, chọn **Vừa khung · không cắt** hoặc **Phủ khung · có thể cắt**, canh **giữa/trên/dưới/trái/phải**, nút **↑/↓** đổi thứ tự, **Đổi** thay ảnh và **×** xóa. Mặc định ảnh mới là **vừa khung, không cắt**. Ảnh nền và nhạc có thể thay hoặc gỡ; khi có thay đổi chưa lưu, link người nhận cũ bị khóa để tránh gửi nhầm.
 
-Đây là website tĩnh: nội dung cá nhân hóa nằm trong fragment của link, không lưu trên máy chủ. Link gốc tải bản chỉnh sửa cục bộ trên trình duyệt bạn đã lưu; thiết bị khác có thể chỉ thấy nội dung mặc định. Chế độ người nhận **chỉ ẩn giao diện cài đặt, không phải kiểm soát truy cập/bảo mật** — người có link có thể chuyển tiếp link hoặc đọc dữ liệu trong URL. Không nhúng thông tin nhạy cảm. Với ảnh/nhạc lớn, link có thể dài; giảm dung lượng hoặc đặt file trong `assets/`.
+Trang vẫn là frontend tĩnh trên GitHub Pages, nhưng khi bấm **Lưu và tạo link riêng**, cấu hình được lưu vào Supabase bằng `share_id`; link người nhận chỉ mang mã này nên không còn nhúng toàn bộ ảnh/nhạc vào URL. Link `gift=` cũ vẫn được đọc để không làm hỏng các thiệp đã gửi trước đây. Chế độ người nhận **chỉ ẩn giao diện cài đặt, không phải kiểm soát truy cập tuyệt đối** — bất kỳ ai có link đều có thể mở hoặc chuyển tiếp thiệp. Không nhúng thông tin nhạy cảm.
 
 ## Thay ảnh, nhạc và lời chúc cho người yêu
 
@@ -51,4 +51,4 @@ Xem [hướng dẫn gửi link, làm mới ảnh preview và các lưu ý riêng
 
 Repository đã có `index.html` ở thư mục gốc, các đường dẫn đều tương đối và có `.nojekyll`. Trên GitHub, mở **Settings → Pages**, chọn **Deploy from a branch**, chọn nhánh **main** và thư mục **/ (root)**, sau đó nhấn **Save**. Đợi GitHub hoàn tất rồi dùng URL dạng `https://TEN-TAI-KHOAN.github.io/TEN-REPOSITORY/`.
 
-Website này chỉ cần frontend tĩnh, không cần backend, đăng nhập hoặc cơ sở dữ liệu. Nhạc có thể bị trình duyệt chặn autoplay; người nhận chỉ cần chạm mở quà hoặc bấm nút `♫` để phát.
+Website vẫn không cần máy chủ ứng dụng riêng hoặc đăng nhập. Supabase chỉ cung cấp Data API/RPC để lưu và tải cấu hình thiệp; publishable key nằm trong frontend và quyền truy cập được giới hạn bằng RLS. Nhạc có thể bị trình duyệt chặn autoplay; người nhận chỉ cần chạm mở quà hoặc bấm nút `♫` để phát.

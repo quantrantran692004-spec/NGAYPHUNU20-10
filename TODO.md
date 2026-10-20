@@ -17,4 +17,5 @@
 - [x] **Cảnh nền theo ảnh tham chiếu:** trời đêm cobalt/navy có 86 sao, 12 sao băng thưa với đầu sáng, vệt đuôi lao chéo rồi tắt dần; trăng khuyết, núi xa, gò cỏ nhiều lớp và 56 ngọn cỏ đung đưa nhẹ (biên độ khoảng 1–1,8°); bố cục dọc dùng ảnh nền WebP nhẹ.
 - [x] **Bó hoa tulip nâng cấp:** 10 bông xuất hiện lần lượt, bay từ đồng cỏ vào vị trí, nhún nhẹ khi ghép thành bó có lá, giấy gói và nơ, rồi chuyển mượt sang minh họa WebP trong suốt 768×1152; sau đó mới hiện nút mở thư.
 - [x] **Preview Zalo/Facebook:** metadata Open Graph/Twitter nằm trong HTML tĩnh; ảnh JPG công khai 1200×630; README trỏ tới hướng dẫn gửi/cache; ghi rõ preview chung do từng thiệp lưu cấu hình trong fragment.
+- [x] **Kết nối Supabase:** tạo bảng `gifts` có RLS và hai RPC `save_gift`/`get_gift`; link người nhận lưu `share_id`, còn link `gift=` cũ vẫn tương thích.
 - [ ] **Ảnh và nhạc thật:** chờ người dùng đặt ảnh cá nhân và file nhạc vào `assets/`; phần mềm có placeholder rõ ràng khi chưa có file.

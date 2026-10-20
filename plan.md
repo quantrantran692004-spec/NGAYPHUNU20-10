@@ -13,7 +13,7 @@ Xây dựng website tĩnh, ưu tiên màn hình điện thoại, tái tạo bố
 ## Kiến trúc
 - `index.html`: markup 5 trạng thái, nút nhạc, chia sẻ và bảng cá nhân hóa.
 - `styles.css`: nền đêm và toàn bộ layout/animation thuần CSS.
-- `app.js`: state machine, sinh hoa/sao/ảnh, localStorage, upload cục bộ, audio, chia sẻ.
+- `app.js`: state machine, sinh hoa/sao/ảnh, tải media cục bộ, audio, chia sẻ và gọi Supabase RPC.
 - `config.js`: dữ liệu cá nhân hóa dễ sửa để đóng gói lên GitHub Pages.
 - `assets/`: nơi đặt ảnh và nhạc thật của người dùng.
 - `manus-routes.json`: khai báo route `/` cho Preview.
@@ -38,4 +38,4 @@ Bảng “Cá nhân hóa” cho phép sửa người nhận, người gửi, ti�
 - **Signature Brand Color:** cobalt night `#0a3fae`, dùng làm quầng sáng đặc trưng.
 
 ## Triển khai
-Website không cần backend và tương thích GitHub Pages. Mọi đường dẫn đều tương đối, không dùng server-side routing. GitHub Pages sẽ phục vụ `index.html` từ nhánh `main`.
+Website không cần máy chủ ứng dụng riêng và tương thích GitHub Pages. Cấu hình link người nhận được lưu trong Supabase qua `save_gift`/`get_gift`, với publishable key ở frontend và RLS bảo vệ bảng `gifts`. Mọi đường dẫn đều tương đối, không dùng server-side routing. GitHub Pages sẽ phục vụ `index.html` từ nhánh `main`.

@@ -68,6 +68,49 @@
     return btoa(unescape(encodeURIComponent(json))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
   }
 
+  const supabaseConfig = window.SUPABASE_CONFIG || {};
+  const supabaseUrl = String(supabaseConfig.url || '').replace(/\/$/, '');
+  const supabaseKey = String(supabaseConfig.publishableKey || '');
+
+  async function callSupabaseRpc(name, body) {
+    if (!supabaseUrl || !supabaseKey) throw new Error('Supabase chưa được cấu hình.');
+    const response = await fetch(`${supabaseUrl}/rest/v1/rpc/${name}`, {
+      method: 'POST',
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+    if (!response.ok) throw new Error(`Supabase RPC ${name} thất bại (${response.status}).`);
+    const text = await response.text();
+    return text ? JSON.parse(text) : null;
+  }
+
+  async function loadRemoteGift() {
+    if (!state.shareId || !isRecipientViewRequested() || readSharedConfig()) return;
+    try {
+      const remote = await callSupabaseRpc('get_gift', { p_share_id: state.shareId });
+      if (!remote || typeof remote !== 'object') throw new Error('Không tìm thấy thiệp.');
+      state.config = mergeConfig(defaults, remote);
+      state.isDirty = false;
+      fillForm();
+      prepareBloom();
+      setAudioSource(state.config.music || '');
+      applyBackground(state.config.background || '');
+      updateMediaStatus();
+      showToast('Đã tải thiệp từ Supabase.');
+    } catch (error) {
+      console.warn('Không tải được thiệp từ Supabase:', error);
+      showToast('Không tải được link thiệp này. Hãy kiểm tra link hoặc thử lại.');
+    }
+  }
+
+  async function saveRemoteGift(shareId) {
+    await callSupabaseRpc('save_gift', { p_share_id: shareId, p_config: state.config });
+  }
+
   function mergeConfig(base, patch) {
     return {
       ...base,
@@ -618,23 +661,11 @@
     if (makeNewId || !state.shareId) state.shareId = createShareId();
     state.isDirty = false;
     const baseUrl = `${window.location.origin}${window.location.pathname}`;
-    const versionedBase = `${baseUrl}?app=gift-v26`;
-    const gift = encodeSharedConfig(state.config);
-    const sid = encodeURIComponent(state.shareId);
-    const payload = `gift=${gift}&sid=${sid}&view=recipient`;
-    const queryUrl = `${versionedBase}&${payload}`;
-    const fragmentUrl = `${versionedBase}#${payload}`;
-    // GitHub Pages rejects sufficiently long query strings with HTTP 414.
-    // Keep short links in the query; put larger gift payloads in the fragment,
-    // which browsers do not send to the server.
-    state.shareUrl = queryUrl.length <= 4000 ? queryUrl : fragmentUrl;
+    const versionedBase = `${baseUrl}?app=gift-v27`;
+    state.shareUrl = `${versionedBase}&sid=${encodeURIComponent(state.shareId)}&view=recipient`;
     $('#shareResult').hidden = false;
     $('#shareLinkOutput').value = state.shareUrl;
-    $('#shareLinkNote').textContent = state.shareUrl.length > 1800000
-      ? 'Link chứa ảnh/nhạc quá dài; một số điện thoại có thể không sao chép hoặc mở ổn định. Hãy dùng tệp nhỏ hơn rồi lưu lại.'
-      : state.shareUrl.includes('#gift=')
-        ? 'Cấu hình có tệp ảnh/nhạc nên được đặt sau dấu # để tránh GitHub Pages từ chối link dài. Hãy gửi đầy đủ link mới này; link cũ vẫn giữ cấu hình cũ.'
-        : 'Link mới này chứa cấu hình hiện tại. Link đã tạo trước đó vẫn giữ cấu hình cũ; hãy sao chép và gửi link mới bên dưới.';
+    $('#shareLinkNote').textContent = 'Link người nhận lưu cấu hình trên Supabase; link cũ vẫn giữ nội dung cũ.';
     $('#copyRecipientLink').disabled = false;
     $('#sendShareLink').disabled = false;
     return state.shareUrl;
@@ -686,11 +717,7 @@
     const button = $('#sendShareLink');
     try {
       const title = `Thiệp 20/10 gửi ${state.config.recipient}`;
-      const usesFragment = url.includes('#gift=');
-      // Send a fragment URL as plain text so share targets don't normalize it
-      // away; short query URLs can use the structured URL field. Let share()
-      // decide support rather than pre-blocking on canShare() false negatives.
-      const shareData = usesFragment ? { title, text: url } : { title, url };
+      const shareData = { title, url };
       // Invoke the native API before touching button state so the original tap
       // remains the direct user activation required by iOS/Android browsers.
       state.isSharing = true;
@@ -747,7 +774,9 @@
     $('#musicInput').value = '';
     $('#photosInput').value = '';
     updateMediaStatus();
-    createShareLink(true);
+    state.shareId = createShareId();
+    await saveRemoteGift(state.shareId);
+    createShareLink(false);
     $('#settingsPanel').classList.add('is-link-only');
     app.classList.add('is-link-result');
     showToast('Đã lưu cấu hình và tạo link gửi mới. Link gốc vẫn giữ cấu hình ban đầu.');
@@ -777,6 +806,16 @@
 
   async function shareCard() {
     if (state.isDirty) { showToast('Có thay đổi chưa lưu. Hãy lưu để tạo link mới trước khi chia sẻ.'); openSettings(); return; }
+    if (!state.shareId) {
+      try {
+        state.shareId = createShareId();
+        await saveRemoteGift(state.shareId);
+      } catch (error) {
+        console.error('Không lưu được thiệp lên Supabase:', error);
+        showToast('Chưa kết nối được Supabase. Hãy thử lại.');
+        return;
+      }
+    }
     const url = createShareLink();
     if (url.length > 1800000) showToast('Link rất dài do có ảnh/nhạc nhúng; nên dùng tệp nhỏ hơn.');
     const shareData = { title: `Thiệp 20/10 gửi ${state.config.recipient}`, url };
@@ -870,4 +909,5 @@
 
   createStars(); createWindGrass(); createPetals(); fillForm(); prepareBloom(); bindEvents(); applyRecipientView();
   setAudioSource(state.config.music || ''); applyBackground(state.config.background || '');
+  loadRemoteGift();
 })();
