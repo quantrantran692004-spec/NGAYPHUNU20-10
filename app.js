@@ -967,6 +967,21 @@
     window.addEventListener('hashchange', () => {
       applyRecipientView();
       const shared = readSharedConfig();
+      const hasRecipientId = new URLSearchParams(window.location.search).has('sid')
+        || new URLSearchParams(window.location.hash.slice(1)).has('sid');
+      if (!shared && !hasRecipientId) {
+        state.config = mergeConfig(defaults, {});
+        state.isDirty = false;
+        state.shareUrl = '';
+        fillForm();
+        prepareBloom();
+        setAudioSource('');
+        applyBackground('');
+        updateMediaStatus();
+        $('#shareResult').hidden = true;
+        setScreen('cover');
+        return;
+      }
       if (!shared) return;
       state.config = mergeConfig(defaults, shared);
       state.isDirty = false;
