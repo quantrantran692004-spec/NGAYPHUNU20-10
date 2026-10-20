@@ -6,7 +6,7 @@
   const state = {
     screen: 'cover',
     config: loadConfig(),
-    shareId: window.location.hash.match(/(?:^#|&)sid=([^&]+)/)?.[1] || '',
+    shareId: new URLSearchParams(window.location.search).get('sid') || window.location.hash.match(/(?:^#|&)sid=([^&]+)/)?.[1] || '',
     shareUrl: '',
     isSharing: false,
     recipientView: false,
@@ -30,20 +30,22 @@
     try {
       const shared = readSharedConfig();
       if (shared) return mergeConfig(defaults, shared);
-      // The repository/root URL is the reusable original gift. Only a link
-      // with an embedded #gift payload gets personalized recipient settings.
+      // The repository/root URL is the reusable original gift. Only a URL
+      // carrying an embedded recipient payload gets personalized settings.
       return mergeConfig(defaults, {});
     } catch (error) {
-      console.warn('Không đọc được cấu hình lưu cục bộ:', error);
+      console.warn('Không đọc được cấu hình thiệp:', error);
       return mergeConfig(defaults, {});
     }
   }
 
   function readSharedConfig() {
-    const match = window.location.hash.match(/(?:^#|&)gift=([^&]+)/);
-    if (!match) return null;
+    const queryGift = new URLSearchParams(window.location.search).get('gift');
+    const legacyGift = window.location.hash.match(/(?:^#|&)gift=([^&]+)/)?.[1] || '';
+    const encodedGift = queryGift || legacyGift;
+    if (!encodedGift) return null;
     try {
-      let raw = match[1].replace(/-/g, '+').replace(/_/g, '/');
+      let raw = encodedGift.replace(/-/g, '+').replace(/_/g, '/');
       raw += '='.repeat((4 - raw.length % 4) % 4);
       return JSON.parse(decodeURIComponent(escape(atob(raw))));
     } catch (error) {
@@ -53,7 +55,8 @@
   }
 
   function isRecipientViewRequested() {
-    return new URLSearchParams(window.location.hash.slice(1)).get('view') === 'recipient';
+    return new URLSearchParams(window.location.search).get('view') === 'recipient'
+      || new URLSearchParams(window.location.hash.slice(1)).get('view') === 'recipient';
   }
 
   function createShareId() {
@@ -617,7 +620,7 @@
     const baseUrl = `${window.location.origin}${window.location.pathname}`;
     const gift = encodeSharedConfig(state.config);
     const sid = encodeURIComponent(state.shareId);
-    state.shareUrl = `${baseUrl}#gift=${gift}&sid=${sid}&view=recipient`;
+    state.shareUrl = `${baseUrl}?gift=${gift}&sid=${sid}&view=recipient`;
     $('#shareResult').hidden = false;
     $('#shareLinkOutput').value = state.shareUrl;
     $('#shareLinkNote').textContent = state.shareUrl.length > 1800000
@@ -672,16 +675,30 @@
       return;
     }
     const button = $('#sendShareLink');
-    state.isSharing = true;
-    button.disabled = true;
     try {
-      // Keep payload minimal: the URL itself already contains the whole gift config.
-      await navigator.share({ title: `Thiệp 20/10 gửi ${state.config.recipient}`, url });
+      const shareData = { title: `Thiệp 20/10 gửi ${state.config.recipient}`, url };
+      if (navigator.canShare && !navigator.canShare({ url })) {
+        showToast('Điện thoại không chấp nhận link dài này để chia sẻ. Hãy giảm dung lượng ảnh/nhạc rồi lưu link mới.');
+        return;
+      }
+      // Invoke the native API before touching button state so the original tap
+      // remains the direct user activation required by iOS/Android browsers.
+      state.isSharing = true;
+      const sharing = navigator.share(shareData);
+      button.disabled = true;
+      await sharing;
       showToast('Đã mở bảng ứng dụng. Chọn Zalo, Facebook, Messenger hoặc ứng dụng muốn gửi.');
     } catch (error) {
-      if (error.name !== 'AbortError') {
+      if (error?.name === 'AbortError') return;
+      if (error?.name === 'NotAllowedError') {
+        showToast('Trình duyệt đã chặn bảng chia sẻ. Mở trang bằng Safari/Chrome qua HTTPS rồi chạm nút gửi trực tiếp.');
+      } else if (error?.name === 'InvalidStateError') {
+        showToast('Bảng chia sẻ trước đó chưa đóng hẳn. Đóng bảng đang mở rồi thử lại.');
+      } else if (error?.name === 'TypeError') {
+        showToast('Link quá dài hoặc không hợp lệ để chia sẻ. Hãy giảm dung lượng ảnh/nhạc rồi lưu link mới.');
+      } else {
         console.warn('Không mở được bảng ứng dụng:', error);
-        showToast('Điện thoại không mở được bảng chia sẻ. Hãy thử lại hoặc dùng “Sao chép link này”.');
+        showToast(`Không mở được bảng chia sẻ (${error?.name || 'lỗi không xác định'}). Hãy thử lại hoặc sao chép link.`);
       }
     } finally {
       state.isSharing = false;
