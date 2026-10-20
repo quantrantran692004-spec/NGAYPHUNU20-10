@@ -125,7 +125,6 @@
 
   function prepareBloom() {
     $('#bouquetFlowers').innerHTML = bouquetMarkup('Bó tulip hồng được gói giấy kem và thắt nơ hồng.');
-    $('#fadeBouquetFlowers').innerHTML = bouquetMarkup('', false);
     $('#coverEyebrow').textContent = state.config.coverEyebrow;
     $('#coverTitle').innerHTML = titleMarkup(state.config.title);
     const hintLines = String(state.config.coverHint || '').split(/\r?\n/);
@@ -140,7 +139,6 @@
     $('#letterSignature').innerHTML = signatureMarkup(state.config.signature);
     $('#continueToAlbumLabel').textContent = state.config.continueToAlbumLabel;
     $('#fadeMessage').innerHTML = emphasizedLinesMarkup(state.config.fadeMessage);
-    $('#continueToGalleryLabel').textContent = state.config.continueToGalleryLabel;
     $('#galleryEyebrow').textContent = state.config.galleryEyebrow;
     $('#galleryHeading').innerHTML = emphasizedLinesMarkup(state.config.galleryHeading);
     $('#galleryHint').textContent = state.config.galleryHint;
@@ -157,15 +155,23 @@
     clearTimeout(state.bloomTimer);
     state.bloomTimer = setTimeout(() => {
       bloom.classList.add('is-bouquet');
-      state.bloomTimer = setTimeout(() => { $('#bloomActions').hidden = false; }, 4700);
-    }, 1700);
+      state.bloomTimer = setTimeout(() => { $('#bloomActions').hidden = false; }, 2650);
+    }, 420);
   }
 
   function startFade() {
     setScreen('fade');
     clearTimeout(state.fadeTimer);
-    $('#continueToGallery').hidden = true;
-    state.fadeTimer = setTimeout(() => { $('#continueToGallery').hidden = false; }, 2600);
+    const fadeScene = $('#scene-fade');
+    fadeScene.classList.remove('is-exiting');
+    state.fadeTimer = setTimeout(() => {
+      fadeScene.classList.add('is-exiting');
+      state.fadeTimer = setTimeout(() => {
+        state.galleryIndex = 0;
+        renderGallery();
+        setScreen('gallery');
+      }, 420);
+    }, 850);
   }
 
   function safeUrl(src) {
@@ -315,7 +321,7 @@
       coverEyebrow: 'coverEyebrowInput', coverHint: 'coverHintInput', openGiftLabel: 'openGiftLabelInput',
       readLetterLabel: 'readLetterLabelInput', letterEyebrow: 'letterEyebrowInput', letterHeading: 'letterHeadingInput',
       signature: 'signatureInput', continueToAlbumLabel: 'continueToAlbumLabelInput', fadeMessage: 'fadeMessageInput',
-      continueToGalleryLabel: 'continueToGalleryLabelInput', galleryEyebrow: 'galleryEyebrowInput', galleryHeading: 'galleryHeadingInput',
+      galleryEyebrow: 'galleryEyebrowInput', galleryHeading: 'galleryHeadingInput',
       galleryHint: 'galleryHintInput', galleryEmptyMessage: 'galleryEmptyMessageInput', restartLabel: 'restartLabelInput', shareLabel: 'shareLabelInput'
     };
     for (const [key, id] of Object.entries(copyInputs)) $(`#${id}`).value = state.config[key] || defaults[key] || '';
@@ -483,25 +489,57 @@
 
   async function copyText(text, fallbackSelector = '#shareLinkOutput') {
     if (!text) return false;
-    const input = $(fallbackSelector);
-    if (!input) return false;
-    input.focus();
-    input.select();
-    input.setSelectionRange(0, input.value.length);
+    const fallbackInput = $(fallbackSelector);
+    let nativeCopy = null;
     try {
-      if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(text); return true; }
-    } catch (error) { console.warn('Không dùng được clipboard API:', error); }
-    try { return document.execCommand('copy'); } catch (error) { return false; }
+      if (navigator.clipboard?.writeText) nativeCopy = navigator.clipboard.writeText(text);
+    } catch (error) { console.warn('Không gọi được Clipboard API:', error); }
+
+    // Chạy fallback đồng bộ ngay trong lượt chạm: nhiều webview chặn Clipboard API
+    // nhưng vẫn cho phép execCommand('copy') nếu vùng chọn thuộc một textarea đang focus.
+    const previousFocus = document.activeElement;
+    const temporaryInput = document.createElement('textarea');
+    temporaryInput.value = text;
+    temporaryInput.setAttribute('readonly', '');
+    temporaryInput.setAttribute('aria-hidden', 'true');
+    temporaryInput.style.cssText = 'position:fixed;top:0;left:0;width:2px;height:2px;padding:0;border:0;opacity:.01;font-size:16px;z-index:-1;';
+    document.body.appendChild(temporaryInput);
+    temporaryInput.focus({ preventScroll: true });
+    temporaryInput.select();
+    temporaryInput.setSelectionRange(0, temporaryInput.value.length);
+    let legacyCopied = false;
+    try { legacyCopied = document.execCommand('copy') === true; }
+    catch (error) { console.warn('Không dùng được execCommand copy:', error); }
+    temporaryInput.remove();
+
+    if (legacyCopied) {
+      if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
+      nativeCopy?.catch((error) => console.warn('Clipboard API bị webview chặn; đã dùng fallback:', error));
+      return true;
+    }
+    if (nativeCopy) {
+      try { await nativeCopy; return true; }
+      catch (error) { console.warn('Không dùng được clipboard API:', error); }
+    }
+    if (fallbackInput) {
+      fallbackInput.value = text;
+      fallbackInput.focus({ preventScroll: true });
+      fallbackInput.select();
+      fallbackInput.setSelectionRange(0, fallbackInput.value.length);
+    }
+    return false;
   }
 
   async function copyOwnerLink() {
     const copied = await copyText($('#ownerLinkOutput').value, '#ownerLinkOutput');
-    showToast(copied ? 'Đã sao chép link gốc để chỉnh sửa.' : 'Link gốc đã được chọn; nhấn giữ ô link rồi chọn Sao chép.');
+    if (copied) showToast('Đã sao chép link gốc để chỉnh sửa.');
+    else { showShareFallback($('#ownerLinkOutput').value, 'owner'); showToast('Trình duyệt chặn sao chép tự động. Nhấn giữ link trong hộp thoại rồi chọn Sao chép.'); }
   }
 
   async function copyPersonalLink() {
     const copied = await copyText($('#shareLinkOutput').value);
-    showToast(copied ? 'Đã sao chép link riêng của bạn.' : 'Link người nhận đã được chọn; nhấn giữ ô link rồi chọn Sao chép.');
+    if (copied) showToast('Đã sao chép link riêng của bạn.');
+    else { showShareFallback($('#shareLinkOutput').value); showToast('Trình duyệt chặn sao chép tự động. Nhấn giữ link trong hộp thoại rồi chọn Sao chép.'); }
   }
 
   async function sendPersonalLink() {
@@ -530,7 +568,7 @@
       coverEyebrow: 'coverEyebrowInput', coverHint: 'coverHintInput', openGiftLabel: 'openGiftLabelInput',
       readLetterLabel: 'readLetterLabelInput', letterEyebrow: 'letterEyebrowInput', letterHeading: 'letterHeadingInput',
       signature: 'signatureInput', continueToAlbumLabel: 'continueToAlbumLabelInput', fadeMessage: 'fadeMessageInput',
-      continueToGalleryLabel: 'continueToGalleryLabelInput', galleryEyebrow: 'galleryEyebrowInput', galleryHeading: 'galleryHeadingInput',
+      galleryEyebrow: 'galleryEyebrowInput', galleryHeading: 'galleryHeadingInput',
       galleryHint: 'galleryHintInput', galleryEmptyMessage: 'galleryEmptyMessageInput', restartLabel: 'restartLabelInput', shareLabel: 'shareLabelInput'
     };
     for (const [key, id] of Object.entries(copyInputs)) state.config[key] = $(`#${id}`).value.trim() || defaults[key];
@@ -595,10 +633,14 @@
     showToast('Không tự sao chép được. Link đã mở để bạn nhấn giữ và chọn Sao chép.');
   }
 
-  function showShareFallback(url) {
+  function showShareFallback(url, kind = 'recipient') {
     const dialog = $('#shareFallbackDialog');
     const input = $('#shareFallbackLink');
     input.value = url;
+    const isOwner = kind === 'owner';
+    $('#shareFallbackEyebrow').textContent = isOwner ? 'LINK GỐC ĐỂ CHỈNH SỬA' : 'LINK THIỆP NGƯỜI NHẬN';
+    input.setAttribute('aria-label', isOwner ? 'Link gốc để chỉnh sửa và sao chép' : 'Link người nhận để sao chép');
+    $('#shareFallbackHeading').textContent = isOwner ? 'Sao chép link gốc' : 'Sao chép để gửi';
     dialog.hidden = false;
     dialog.setAttribute('aria-hidden', 'false');
     requestAnimationFrame(() => { input.focus(); input.select(); input.setSelectionRange(0, input.value.length); });
@@ -615,9 +657,11 @@
     const copied = await copyText($('#shareFallbackLink').value, '#shareFallbackLink');
     if (copied) {
       closeShareFallback();
-      showToast('Đã sao chép link người nhận.');
+      showToast('Đã sao chép link.');
     } else {
-      showToast('Link đã được chọn; nhấn giữ ô link rồi chọn Sao chép.');
+      const input = $('#shareFallbackLink');
+      input.focus({ preventScroll: true }); input.select(); input.setSelectionRange(0, input.value.length);
+      showToast('Link đã chọn. Nhấn giữ trong ô rồi chọn Sao chép.');
     }
   }
 
@@ -654,7 +698,6 @@
     $('#readLetter').addEventListener('click', () => setScreen('letter'));
     $('#closeLetter').addEventListener('click', () => setScreen('bloom'));
     $('#continueToAlbum').addEventListener('click', startFade);
-    $('#continueToGallery').addEventListener('click', () => { clearTimeout(state.fadeTimer); state.galleryIndex = 0; setScreen('gallery'); renderGallery(); });
     $('#galleryTrack').addEventListener('click', (event) => {
       const button = event.target.closest('[data-gallery-step]');
       if (button && !button.disabled) moveGalleryPhoto(Number(button.dataset.galleryStep));
