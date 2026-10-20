@@ -163,9 +163,7 @@
             <label class="share-link-label share-link-label--recipient" for="shareLinkOutput">LINK GỬI NGƯỜI YÊU · chỉ xem, ẩn cài đặt</label>
             <input id="shareLinkOutput" class="share-link-output" type="text" readonly aria-label="Link chỉ xem dành cho người nhận" />
             <div class="share-result__actions">
-              <button id="sendShareLink" class="primary-button" type="button">Gửi qua Zalo / Facebook / ứng dụng khác</button>
-              <button id="copyShareLink" class="secondary-button" type="button">Sao chép link người nhận</button>
-              <button id="openManualCopy" class="secondary-button" type="button">Chọn link thủ công nếu điện thoại chặn</button>
+              <button id="sendShareLink" class="primary-button" type="button">Gửi link qua ứng dụng trên điện thoại</button>
             </div>
           </section>
           <div class="settings-actions">
@@ -177,20 +175,8 @@
       </aside>
       <div id="settingsScrim" class="settings-scrim" hidden></div>
       <div id="toast" class="toast" role="status" aria-live="polite"></div>
-      <section id="copyFallback" class="copy-fallback" role="dialog" aria-modal="true" aria-labelledby="copyFallbackTitle" hidden>
-        <div class="copy-fallback__card">
-          <button id="closeCopyFallback" class="copy-fallback__close" type="button" aria-label="Đóng">×</button>
-          <h2 id="copyFallbackTitle">Không sao chép tự động được</h2>
-          <p>Chọn một cách bên dưới. Nếu bảng chia sẻ hiện ra, chọn mục <strong>Sao chép</strong>.</p>
-          <textarea id="copyFallbackValue" readonly rows="3" aria-label="Link cần sao chép"></textarea>
-          <button id="retryClipboard" class="primary-button" type="button">Thử sao chép lại</button>
-          <button id="openFallbackShare" class="secondary-button" type="button">Mở bảng chia sẻ</button>
-          <button id="selectFallbackValue" class="secondary-button" type="button">Chọn link để sao chép thủ công</button>
-          <p id="copyFallbackHelp" class="copy-fallback__help" aria-live="polite">Thủ công: chạm “Chọn link”, sau đó nhấn giữ phần link và chọn “Sao chép”.</p>
-        </div>
-      </section>
     </main>
     <script src="./config.js"></script>
-    <script src="./app.js?v=app-share-vs-copy-v18"></script>
+    <script src="./app.js?v=single-app-share-v19"></script>
   </body>
 </html>

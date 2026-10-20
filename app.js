@@ -604,9 +604,8 @@
   function markShareDirty() {
     state.isDirty = true;
     if (!$('#shareResult').hidden) {
-      $('#shareLinkNote').textContent = 'Có thay đổi chưa lưu. Hãy bấm “Lưu và tạo link riêng” trước khi sao chép hoặc gửi link.';
+      $('#shareLinkNote').textContent = 'Có thay đổi chưa lưu. Hãy bấm “Lưu và tạo link riêng” trước khi gửi link.';
       $('#copyOwnerLink').disabled = true;
-      $('#copyShareLink').disabled = true;
       $('#sendShareLink').disabled = true;
     }
   }
@@ -626,25 +625,12 @@
       ? 'Link chứa ảnh/nhạc quá dài; một số điện thoại có thể không sao chép hoặc mở ổn định. Hãy dùng tệp nhỏ hơn rồi lưu lại.'
       : 'Link người nhận là bản lưu tại thời điểm tạo; sau khi sửa, hãy dùng link mới. Link gốc mang theo cấu hình để tiếp tục chỉnh sửa.';
     $('#copyOwnerLink').disabled = false;
-    $('#copyShareLink').disabled = false;
     $('#sendShareLink').disabled = false;
     return state.shareUrl;
   }
 
-  async function copyText(text, fallbackSelector = '#shareLinkOutput', useShareFallback = true) {
+  async function copyText(text, fallbackSelector = '#ownerLinkOutput') {
     if (!text) return 'failed';
-    const isMobile = navigator.userAgentData?.mobile || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || matchMedia('(max-width: 700px)').matches;
-    // iOS/Safari and some Android browsers can reject clipboard writes. Invoke
-    // Web Share synchronously from the tap handler before any awaited operation,
-    // otherwise transient user activation may be lost.
-    if (useShareFallback && isMobile && navigator.share) {
-      try {
-        await navigator.share({ title: 'Link thiệp 20/10', text: 'Chọn “Sao chép” trong bảng chia sẻ để lưu link.', url: text });
-        return 'shared';
-      } catch (error) {
-        if (error.name !== 'AbortError') console.warn('Không mở được bảng chia sẻ hệ thống:', error);
-      }
-    }
     try {
       if (window.isSecureContext && navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(text);
@@ -652,14 +638,6 @@
       }
     } catch (error) {
       console.warn('Clipboard API bị chặn; thử cách sao chép tương thích hơn:', error);
-    }
-    if (useShareFallback && !isMobile && navigator.share) {
-      try {
-        await navigator.share({ title: 'Link thiệp 20/10', text: 'Chọn “Sao chép” trong bảng chia sẻ để lưu link.', url: text });
-        return 'shared';
-      } catch (error) {
-        if (error.name !== 'AbortError') console.warn('Không mở được bảng chia sẻ hệ thống:', error);
-      }
     }
     const input = $(fallbackSelector);
     if (!input) return 'failed';
@@ -675,93 +653,29 @@
 
   function copyStatusMessage(status, copiedMessage) {
     if (status === 'copied') return copiedMessage;
-    if (status === 'shared') return 'Đã mở bảng chia sẻ. Chọn “Sao chép” để lưu link vào clipboard.';
-    return 'Chưa sao chép được tự động. Link đã được chọn; hãy nhấn giữ để sao chép thủ công.';
-  }
-
-  function showCopyFallback(text) {
-    const panel = $('#copyFallback');
-    if (!panel || !text) return;
-    $('#copyFallbackValue').value = text;
-    $('#copyFallbackHelp').textContent = 'Thủ công: chạm “Chọn link”, sau đó nhấn giữ phần link và chọn “Sao chép”.';
-    panel.hidden = false;
-    $('#closeCopyFallback').focus({ preventScroll: true });
-  }
-
-  async function retryClipboardCopy() {
-    const text = $('#copyFallbackValue').value;
-    try {
-      if (!window.isSecureContext || !navigator.clipboard?.writeText) throw new Error('Clipboard API không khả dụng');
-      await navigator.clipboard.writeText(text);
-      $('#copyFallback').hidden = true;
-      showToast('Đã sao chép link vào bảng tạm.');
-    } catch (error) {
-      console.warn('Sao chép lại từ bảng dự phòng không thành công:', error);
-      $('#copyFallbackHelp').textContent = 'Điện thoại vẫn chặn sao chép. Hãy thử “Mở bảng chia sẻ” hoặc chọn link rồi nhấn giữ để sao chép.';
-      $('#copyFallbackValue').focus({ preventScroll: true });
-      $('#copyFallbackValue').select();
-      showToast('Chưa sao chép được. Hãy chọn một phương án dự phòng bên dưới.');
-    }
-  }
-
-  async function openFallbackShare() {
-    const text = $('#copyFallbackValue').value;
-    if (!navigator.share) {
-      $('#copyFallbackHelp').textContent = 'Trình duyệt này không có bảng chia sẻ. Chọn link rồi nhấn giữ để sao chép.';
-      return;
-    }
-    try {
-      await navigator.share({ title: 'Link thiệp 20/10', text: 'Chọn “Sao chép” trong bảng chia sẻ để lưu link.', url: text });
-      $('#copyFallback').hidden = true;
-      showToast('Đã mở bảng chia sẻ. Chọn “Sao chép” để lưu link.');
-    } catch (error) {
-      if (error.name !== 'AbortError') console.warn('Bảng chia sẻ không mở được:', error);
-      $('#copyFallbackHelp').textContent = 'Không mở được bảng chia sẻ. Hãy thử sao chép lại hoặc chọn link để sao chép thủ công.';
-    }
-  }
-
-  function selectFallbackLink() {
-    const input = $('#copyFallbackValue');
-    input.focus({ preventScroll: true });
-    input.select();
-    try { input.setSelectionRange(0, input.value.length); } catch (error) { /* Một số trình duyệt không hỗ trợ. */ }
-    $('#copyFallbackHelp').textContent = 'Link đã được chọn. Nhấn giữ phần chữ được chọn rồi chọn “Sao chép” trong menu điện thoại.';
+    return 'Chưa sao chép được tự động. Link đã được chọn; nhấn giữ để sao chép thủ công.';
   }
 
   async function copyOwnerLink() {
     const text = $('#ownerLinkOutput').value;
-    const status = await copyText(text, '#ownerLinkOutput', false);
+    const status = await copyText(text, '#ownerLinkOutput');
     showToast(copyStatusMessage(status, 'Đã sao chép link gốc để chỉnh sửa.'));
-    if (status === 'manual') showCopyFallback(text);
   }
 
-  async function copyPersonalLink() {
-    const text = $('#shareLinkOutput').value;
-    const status = await copyText(text, '#shareLinkOutput', false);
-    showToast(copyStatusMessage(status, 'Đã sao chép link riêng của bạn.'));
-    if (status === 'manual') showCopyFallback(text);
-  }
-
-  async function sendPersonalLink() {
+  function sendPersonalLink() {
     const url = $('#shareLinkOutput').value || createShareLink();
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: 'Thiệp 20/10 của riêng mình', text: `Một món quà dành cho ${state.config.recipient}`, url });
-        return;
-      } catch (error) {
-        if (error.name === 'AbortError') return;
-        console.warn('Không mở được bảng chia sẻ:', error);
-      }
+    if (!navigator.share) {
+      showToast('Trình duyệt này không hỗ trợ bảng chọn ứng dụng. Hãy mở thiệp bằng Safari hoặc Chrome trên điện thoại.');
+      return;
     }
-    const status = await copyText(url, '#shareLinkOutput', false);
-    showToast(copyStatusMessage(status, 'Đã sao chép link người nhận.'));
-    if (status === 'manual') showCopyFallback(url);
-  }
-
-  function openManualCopy() {
-    const url = $('#shareLinkOutput').value || createShareLink();
-    showCopyFallback(url);
-    selectFallbackLink();
+    try {
+      const sharing = navigator.share({ title: 'Thiệp 20/10', text: `Gửi thiệp 20/10 đến ${state.config.recipient}:`, url });
+      showToast('Đã mở bảng ứng dụng. Chọn Zalo, Facebook, Messenger hoặc ứng dụng muốn gửi.');
+      sharing.catch((error) => { if (error.name !== 'AbortError') { console.warn('Không mở được bảng ứng dụng:', error); showToast('Điện thoại không mở được bảng ứng dụng chia sẻ.'); } });
+    } catch (error) {
+      console.warn('Không mở được bảng ứng dụng:', error);
+      showToast('Điện thoại không mở được bảng ứng dụng chia sẻ.');
+    }
   }
 
   async function handleSettingsSubmit(event) {
@@ -832,9 +746,7 @@
       try { await navigator.share(shareData); showToast('Đã mở bảng chia sẻ.'); return; }
       catch (error) { if (error.name === 'AbortError') return; console.warn('Không mở được bảng chia sẻ:', error); }
     }
-    const status = await copyText(url, '#shareLinkOutput', false);
-    showToast(copyStatusMessage(status, 'Đã sao chép link riêng của thiệp.'));
-    if (status === 'manual') showCopyFallback(url);
+    showToast('Trình duyệt này không hỗ trợ bảng chọn ứng dụng. Hãy mở thiệp bằng Safari hoặc Chrome trên điện thoại.');
   }
 
   function toggleMusic() {
@@ -895,14 +807,7 @@
     $('#restartButton').addEventListener('click', () => { clearTimeout(state.bloomTimer); clearTimeout(state.fadeTimer); setScreen('cover'); });
     $('#shareButton').addEventListener('click', shareCard);
     $('#copyOwnerLink').addEventListener('click', copyOwnerLink);
-    $('#copyShareLink').addEventListener('click', copyPersonalLink);
     $('#sendShareLink').addEventListener('click', sendPersonalLink);
-    $('#openManualCopy').addEventListener('click', openManualCopy);
-    $('#closeCopyFallback').addEventListener('click', () => { $('#copyFallback').hidden = true; });
-    $('#retryClipboard').addEventListener('click', retryClipboardCopy);
-    $('#openFallbackShare').addEventListener('click', openFallbackShare);
-    $('#selectFallbackValue').addEventListener('click', selectFallbackLink);
-    $('#copyFallback').addEventListener('click', (event) => { if (event.target === $('#copyFallback')) $('#copyFallback').hidden = true; });
     $('#choosePhotosButton').addEventListener('click', () => $('#photosInput').click());
     $('#photosInput').addEventListener('change', handlePhotoSelection);
     $('#backgroundInput').addEventListener('change', () => {
