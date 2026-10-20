@@ -9,7 +9,6 @@
     config: loadConfig(),
     shareId: window.location.hash.match(/(?:^#|&)sid=([^&]+)/)?.[1] || '',
     shareUrl: '',
-    ownerUrl: '',
     recipientView: false,
     photoProcessing: Promise.resolve(),
     isDirty: false,
@@ -432,6 +431,9 @@
     if (!src) return;
     audio.src = src;
     audio.load();
+    // Attempt autoplay on page/open. Browsers may block audible autoplay until
+    // a user gesture; the open-gift click handler retries from that gesture.
+    audio.play().catch(() => {});
   }
 
   function applyBackground(src) {
@@ -605,7 +607,7 @@
     state.isDirty = true;
     if (!$('#shareResult').hidden) {
       $('#shareLinkNote').textContent = 'Có thay đổi chưa lưu. Hãy bấm “Lưu và tạo link riêng” trước khi gửi link.';
-      $('#copyOwnerLink').disabled = true;
+      $('#copyRecipientLink').disabled = true;
       $('#sendShareLink').disabled = true;
     }
   }
@@ -616,20 +618,18 @@
     const baseUrl = `${window.location.origin}${window.location.pathname}`;
     const gift = encodeSharedConfig(state.config);
     const sid = encodeURIComponent(state.shareId);
-    state.ownerUrl = `${baseUrl}#gift=${gift}&sid=${sid}&view=owner`;
     state.shareUrl = `${baseUrl}#gift=${gift}&sid=${sid}&view=recipient`;
     $('#shareResult').hidden = false;
-    $('#ownerLinkOutput').value = state.ownerUrl;
     $('#shareLinkOutput').value = state.shareUrl;
     $('#shareLinkNote').textContent = state.shareUrl.length > 1800000
       ? 'Link chứa ảnh/nhạc quá dài; một số điện thoại có thể không sao chép hoặc mở ổn định. Hãy dùng tệp nhỏ hơn rồi lưu lại.'
-      : 'Link người nhận là bản lưu tại thời điểm tạo; sau khi sửa, hãy dùng link mới. Link gốc mang theo cấu hình để tiếp tục chỉnh sửa.';
-    $('#copyOwnerLink').disabled = false;
+      : 'Đây là link duy nhất, chứa cấu hình thiệp tại thời điểm lưu. Gửi link này cho người nhận.';
+    $('#copyRecipientLink').disabled = false;
     $('#sendShareLink').disabled = false;
     return state.shareUrl;
   }
 
-  async function copyText(text, fallbackSelector = '#ownerLinkOutput') {
+  async function copyText(text, fallbackSelector = '#shareLinkOutput') {
     if (!text) return 'failed';
     try {
       if (window.isSecureContext && navigator.clipboard?.writeText) {
@@ -656,10 +656,10 @@
     return 'Chưa sao chép được tự động. Link đã được chọn; nhấn giữ để sao chép thủ công.';
   }
 
-  async function copyOwnerLink() {
-    const text = $('#ownerLinkOutput').value;
-    const status = await copyText(text, '#ownerLinkOutput');
-    showToast(copyStatusMessage(status, 'Đã sao chép link gốc để chỉnh sửa.'));
+  async function copyRecipientLink() {
+    const text = $('#shareLinkOutput').value;
+    const status = await copyText(text, '#shareLinkOutput');
+    showToast(copyStatusMessage(status, 'Đã sao chép link gửi người nhận.'));
   }
 
   function sendPersonalLink() {
@@ -669,7 +669,8 @@
       return;
     }
     try {
-      const sharing = navigator.share({ title: 'Thiệp 20/10', text: `Gửi thiệp 20/10 đến ${state.config.recipient}:`, url });
+      // Keep payload minimal: the URL itself already contains the whole gift config.
+      const sharing = navigator.share({ title: `Thiệp 20/10 gửi ${state.config.recipient}`, url });
       showToast('Đã mở bảng ứng dụng. Chọn Zalo, Facebook, Messenger hoặc ứng dụng muốn gửi.');
       sharing.catch((error) => { if (error.name !== 'AbortError') { console.warn('Không mở được bảng ứng dụng:', error); showToast('Điện thoại không mở được bảng ứng dụng chia sẻ.'); } });
     } catch (error) {
@@ -741,7 +742,7 @@
     if (state.isDirty) { showToast('Có thay đổi chưa lưu. Hãy lưu để tạo link mới trước khi chia sẻ.'); openSettings(); return; }
     const url = createShareLink();
     if (url.length > 1800000) showToast('Link rất dài do có ảnh/nhạc nhúng; nên dùng tệp nhỏ hơn.');
-    const shareData = { title: 'Thiệp 20/10 — Bó hoa dưới trời sao', text: `Một món quà dành cho ${state.config.recipient}`, url };
+    const shareData = { title: `Thiệp 20/10 gửi ${state.config.recipient}`, url };
     if (navigator.share) {
       try { await navigator.share(shareData); showToast('Đã mở bảng chia sẻ.'); return; }
       catch (error) { if (error.name === 'AbortError') return; console.warn('Không mở được bảng chia sẻ:', error); }
@@ -775,7 +776,11 @@
       if (state.screen === 'gallery') renderGallery();
       showToast('Đã mở nội dung của link thiệp này.');
     });
-    $('#openGift').addEventListener('click', () => { if ($('#bgMusic').src) $('#bgMusic').play().catch(() => {}); beginBloom(); });
+    $('#openGift').addEventListener('click', () => {
+      const audio = $('#bgMusic');
+      if (audio.src) audio.play().catch(() => showToast('Chạm nút nhạc ♫ để phát nếu điện thoại vẫn chặn tự động.'));
+      beginBloom();
+    });
     $('#readLetter').addEventListener('click', openLetter);
     $('#closeLetter').addEventListener('click', () => setScreen('bloom'));
     $('#continueToAlbum').addEventListener('click', startFade);
@@ -806,7 +811,7 @@
     $('#exportButton').addEventListener('click', exportConfig);
     $('#restartButton').addEventListener('click', () => { clearTimeout(state.bloomTimer); clearTimeout(state.fadeTimer); setScreen('cover'); });
     $('#shareButton').addEventListener('click', shareCard);
-    $('#copyOwnerLink').addEventListener('click', copyOwnerLink);
+    $('#copyRecipientLink').addEventListener('click', copyRecipientLink);
     $('#sendShareLink').addEventListener('click', sendPersonalLink);
     $('#choosePhotosButton').addEventListener('click', () => $('#photosInput').click());
     $('#photosInput').addEventListener('change', handlePhotoSelection);

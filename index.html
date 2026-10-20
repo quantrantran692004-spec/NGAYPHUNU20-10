@@ -51,7 +51,7 @@
         <div id="petals" class="petals"></div>
       </div>
       <div id="customBackground" class="custom-background" aria-hidden="true"></div>
-      <audio id="bgMusic" loop preload="metadata"></audio>
+      <audio id="bgMusic" loop autoplay preload="auto"></audio>
 
       <header class="topbar">
         <div class="brand-mark" aria-label="Thiệp 20/10">20<span>/</span>10</div>
@@ -132,7 +132,7 @@
           <div><p class="eyebrow">CÁ NHÂN HÓA MÓN QUÀ</p><h2 id="settingsHeading">Chỉnh thiệp của hai mình</h2></div>
           <button id="closeSettings" class="close-button" type="button" aria-label="Đóng phần cá nhân hóa">×</button>
         </div>
-          <p class="settings-note">Sau khi lưu, bạn nhận hai link: giữ link gốc để chỉnh sửa; chỉ gửi link người nhận — link này chỉ xem và ẩn phần cài đặt.</p>
+          <p class="settings-note">Sau khi lưu, bạn nhận một link duy nhất để gửi. Link mở thiệp ở chế độ chỉ xem.</p>
           <form id="settingsForm" class="settings-form">
             <label>Người nhận<input id="recipientInput" name="recipient" type="text" placeholder="Ví dụ: Em yêu" /></label>
             <label>Tên người gửi<input id="senderInput" name="sender" type="text" placeholder="Ví dụ: Anh" /></label>
@@ -155,14 +155,12 @@
           <p id="photosUploadStatus" class="media-status" aria-live="polite">Chưa thêm ảnh mới.</p>
           <div id="photoList" class="photo-list"></div>
           <section id="shareResult" class="share-result" aria-live="polite" hidden>
-            <p class="share-result__title">Hai link thiệp đã sẵn sàng</p>
-            <p id="shareLinkNote" class="share-result__note">Link riêng được tạo sau khi lưu.</p>
-            <label class="share-link-label" for="ownerLinkOutput">LINK GỐC · giữ riêng để chỉnh sửa</label>
-            <input id="ownerLinkOutput" class="share-link-output" type="text" readonly aria-label="Link gốc để chỉnh sửa thiệp" />
-            <button id="copyOwnerLink" class="secondary-button share-owner-copy" type="button">Sao chép link gốc</button>
-            <label class="share-link-label share-link-label--recipient" for="shareLinkOutput">LINK GỬI NGƯỜI YÊU · chỉ xem, ẩn cài đặt</label>
-            <input id="shareLinkOutput" class="share-link-output" type="text" readonly aria-label="Link chỉ xem dành cho người nhận" />
+            <p class="share-result__title">Link thiệp của bạn</p>
+            <p id="shareLinkNote" class="share-result__note">Lưu thiệp để tạo một link gửi người nhận.</p>
+            <label class="share-link-label" for="shareLinkOutput">LINK GỬI NGƯỜI NHẬN · chỉ xem</label>
+            <input id="shareLinkOutput" class="share-link-output" type="text" readonly aria-label="Link duy nhất để gửi người nhận" />
             <div class="share-result__actions">
+              <button id="copyRecipientLink" class="secondary-button" type="button">Sao chép link này</button>
               <button id="sendShareLink" class="primary-button" type="button">Gửi link qua ứng dụng trên điện thoại</button>
             </div>
           </section>
@@ -177,6 +175,6 @@
       <div id="toast" class="toast" role="status" aria-live="polite"></div>
     </main>
     <script src="./config.js"></script>
-    <script src="./app.js?v=single-app-share-v19"></script>
+    <script src="./app.js?v=one-recipient-link-audio-v20"></script>
   </body>
 </html>
