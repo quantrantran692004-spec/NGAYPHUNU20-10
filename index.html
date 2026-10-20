@@ -115,8 +115,14 @@
           <label>Tiêu đề chính<textarea id="titleInput" name="title" rows="2"></textarea></label>
           <label>Lời chúc ngắn<textarea id="greetingInput" name="greeting" rows="3"></textarea></label>
           <label>Nội dung lá thư<textarea id="letterInput" name="letter" rows="7"></textarea></label>
-          <label>Ảnh nền <span class="label-help">Chọn ảnh trong điện thoại</span><input id="backgroundInput" type="file" accept="image/*" /></label>
-          <label>Nhạc nền <span class="label-help">MP3, M4A hoặc tệp âm thanh</span><input id="musicInput" type="file" accept="audio/*" /></label>
+          <div class="media-control">
+            <label>Ảnh nền <span class="label-help">Chọn ảnh trong điện thoại</span><input id="backgroundInput" type="file" accept="image/*" /></label>
+            <div class="media-control__footer"><span id="backgroundStatus" class="media-status"></span><button id="clearBackground" class="media-clear" type="button">Gỡ nền</button></div>
+          </div>
+          <div class="media-control">
+            <label>Nhạc nền <span class="label-help">MP3, M4A hoặc tệp âm thanh</span><input id="musicInput" type="file" accept="audio/*" /></label>
+            <div class="media-control__footer"><span id="musicStatus" class="media-status"></span><button id="clearMusic" class="media-clear" type="button">Gỡ nhạc</button></div>
+          </div>
           <label>Ảnh kỷ niệm <span class="label-help">Chọn nhiều ảnh cùng lúc</span><input id="photosInput" type="file" accept="image/*" multiple /></label>
           <div id="photoList" class="photo-list"></div>
           <section id="shareResult" class="share-result" aria-live="polite" hidden>
@@ -139,6 +145,6 @@
       <div id="toast" class="toast" role="status" aria-live="polite"></div>
     </main>
     <script src="./config.js"></script>
-    <script src="./app.js?v=mobile-share-v3"></script>
+    <script src="./app.js?v=mobile-share-v4"></script>
   </body>
 </html>

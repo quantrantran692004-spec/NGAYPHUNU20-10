@@ -15,6 +15,8 @@ Sau đó mở `http://localhost:3000`.
 ## Mỗi người tạo thiệp và link riêng trên điện thoại
 Mở link trang thiệp, chạm nút `✦` ở góc trên để sửa tên, lời chúc, thư, ảnh nền, nhạc và chọn nhiều ảnh. Bấm **Lưu và tạo link riêng**: link riêng hiện ngay bên dưới, dùng **Gửi link** để mở menu chia sẻ của điện thoại hoặc **Sao chép link** để gửi qua ứng dụng bạn chọn. Ảnh được nén trên điện thoại để link nhẹ hơn. Mỗi lần lưu sẽ cấp mã link riêng mới; ai mở link sẽ thấy đúng nội dung đã lưu.
 
+Ảnh vừa chọn sẽ hiện ngay trong danh sách để kiểm tra trước khi lưu. Mỗi ảnh có ô sửa chú thích/ghi chú, nút **↑/↓** để đổi thứ tự, **Đổi** để thay riêng ảnh đó và **×** để xóa; có thể **Xóa tất cả**. Ảnh nền và nhạc nền cũng có thể thay bằng tệp mới hoặc gỡ bỏ. Khi có thay đổi chưa lưu, nút gửi/copy link tạm khóa để tránh gửi nhầm bản cũ.
+
 Đây là website tĩnh: dữ liệu cá nhân hóa nằm trong link chứ không được lưu trên máy chủ. Người có link có thể xem hoặc chuyển tiếp link. Với ảnh/nhạc lớn, link sẽ dài; giảm dung lượng hoặc đặt file trong `assets/` để dùng đường dẫn ngắn ổn định hơn.
 
 ## Thay ảnh, nhạc và lời chúc cho người yêu

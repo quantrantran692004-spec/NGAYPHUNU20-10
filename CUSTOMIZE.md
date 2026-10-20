@@ -6,6 +6,8 @@ Mở `config.js` và sửa `recipient`, `sender`, `greeting`, `letter`. Nhạc d
 ## Tải ảnh/nhạc từ giao diện
 Bấm nút `✦` trên thiệp, chọn ảnh nền, nhạc nền và nhiều ảnh kỷ niệm, sau đó bấm **Lưu thay đổi**. Ảnh được hiển thị trong khung giữ nguyên tỉ lệ, không bị kéo méo; nếu file lỗi, thiệp tự thay bằng placeholder để không hỏng toàn bộ hiệu ứng. Nút **Xuất cấu hình** tải file `config.js` để đưa lên repository.
 
+Ảnh vừa chọn hiện ngay trong danh sách: có thể sửa chú thích/ghi chú, thay riêng một ảnh, dùng `↑`/`↓` để sắp xếp, xóa ảnh đơn hoặc xóa cả album trước khi lưu. Ảnh nền và nhạc nền có nút gỡ; chọn tệp khác để thay. Link cũ bị khóa gửi/copy khi đang có thay đổi chưa lưu.
+
 Ảnh/nhạc chọn trực tiếp trong trình duyệt được lưu cho bản xem trước trên trình duyệt đó. Muốn người yêu mở link GitHub Pages và thấy cùng nội dung, hãy đặt file thật vào `assets/`, sửa `config.js`, rồi commit/push lại.
 
 ## Link riêng cho từng người
